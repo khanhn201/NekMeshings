@@ -1,8 +1,8 @@
-function plotMesh(elements, bc_wall, bc_inflow, bc_outflow, plotElements, showNumber)
-  if nargin < 5
+function plotMesh(elements, bc, plotElements, showNumber)
+  if nargin < 3
     plotElements = false;
   end
-  if nargin < 6
+  if nargin < 4
     showNumber = false;
   end
 
@@ -33,34 +33,17 @@ function plotMesh(elements, bc_wall, bc_inflow, bc_outflow, plotElements, showNu
 
 
 
-  % Plot bc_wall
-  for i = 1:size(bc_wall, 1)
-    elem = bc_wall(i, 1);
-    face = bc_wall(i, 2);
-    coordinates = elements(elem, face_node_map(face, :), :);
-    x = coordinates(:,:, 1);
-    y = coordinates(:,:, 2);
-    plot(x, y, '-red', 'LineWidth', 1.5);
-  end
+  % Plot bc
+  colors = jet(max(bc(:, 3)));
+  for i = 1:size(bc, 1)
+    elem = bc(i, 1);
+    face = bc(i, 2);
+    color = colors(bc(i, 3), :);
 
-  % Plot bc_inflow
-  for i = 1:size(bc_inflow, 1)
-    elem = bc_inflow(i, 1);
-    face = bc_inflow(i, 2);
     coordinates = elements(elem, face_node_map(face, :), :);
     x = coordinates(:,:, 1);
     y = coordinates(:,:, 2);
-    plot(x, y, '-green', 'LineWidth', 1.5);
-  end
-
-  % Plot bc_outflow
-  for i = 1:size(bc_outflow, 1)
-    elem = bc_outflow(i, 1);
-    face = bc_outflow(i, 2);
-    coordinates = elements(elem, face_node_map(face, :), :);
-    x = coordinates(:,:, 1);
-    y = coordinates(:,:, 2);
-    plot(x, y, '-blue', 'LineWidth', 1.5);
+    plot(x, y, '-', 'Color', color, 'LineWidth', 1.5);
   end
 
   axis equal;

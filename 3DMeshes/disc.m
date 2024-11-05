@@ -12,10 +12,6 @@ function faces = disc(r1, r2, n, axis)
         case 'y'
             innerRing = innerRing(:, [2, 3, 1]);
             outerRing = outerRing(:, [2, 3, 1]);
-        case 'z'
-
-        otherwise
-            error('Invalid axis. Choose x, y, or z.');
     end
 
     for i = 1:n

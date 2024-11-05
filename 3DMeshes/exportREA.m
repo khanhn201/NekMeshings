@@ -22,6 +22,8 @@ function exportREA(filename, elements, boundaries)
       fprintf(fileID,'%15.7g  %15.7g  %15.7g  %15.7g\n',elements(i,5:8,3));
   end
 
+  fprintf(fileID,'  ***** CURVED SIDE DATA *****\n');
+  fprintf(fileID,'     0 Curved sides follow IEDGE,IEL,CURVE(I),I=1,5, CCURVE\n');
   fprintf(fileID,'  ***** BOUNDARY CONDITIONS ***** \n');
   fprintf(fileID,' ***** FLUID   BOUNDARY CONDITIONS ***** \n');
   for i = 1:size(boundaries,1)
@@ -31,27 +33,29 @@ function exportREA(filename, elements, boundaries)
       elseif boundaries(i,j, 1) == 2
         fprintf(fileID,' v    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       elseif boundaries(i,j, 1) == 3
-        fprintf(fileID,' W    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+        fprintf(fileID,' O    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+      elseif boundaries(i,j, 1) == 4
+        fprintf(fileID,' int  %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       else
         fprintf(fileID,' E    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       end
     end
   end
-
-  fprintf(fileID,'  ***** THERMAL BOUNDARY CONDITIONS *****\n');
-  for i = 1:size(boundaries,1)
-    for j = 1:6
-      if boundaries(i,j, 1) == 1
-        fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
-      elseif boundaries(i,j, 1) == 2
-        fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
-      elseif boundaries(i,j, 1) == 3
-        fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
-      else
-        fprintf(fileID,' E    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
-      end
-    end
-  end
+  %
+  % fprintf(fileID,'  ***** THERMAL BOUNDARY CONDITIONS *****\n');
+  % for i = 1:size(boundaries,1)
+  %   for j = 1:6
+  %     if boundaries(i,j, 1) == 1
+  %       fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+  %     elseif boundaries(i,j, 1) == 2
+  %       fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+  %     elseif boundaries(i,j, 1) == 3
+  %       fprintf(fileID,' t    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+  %     else
+  %       fprintf(fileID,' E    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+  %     end
+  %   end
+  % end
 % Add footer
   footerID = fopen('footer.rea', 'r');
   while ~feof(footerID)

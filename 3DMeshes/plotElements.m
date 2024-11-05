@@ -17,7 +17,7 @@ function plotElements(elements)
       for j = 1:4
           next_idx = mod(j, 4) + 1; % Wrap around index for the next vertex
           side_vertices = [lower_face(j, :); lower_face(next_idx, :); upper_face(next_idx, :); upper_face(j, :)];
-          fill3(side_vertices(:, 1), side_vertices(:, 2), side_vertices(:, 3), 'g', 'FaceAlpha', 0.3);
+          fill3(side_vertices(:, 1), side_vertices(:, 2), side_vertices(:, 3), 'g', 'FaceAlpha', 0.5);
       end
   end
 

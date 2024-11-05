@@ -27,7 +27,11 @@ function exportREA(filename, elements, boundaries)
       elseif boundaries(i,j, 1) == 2
         fprintf(fileID,' v    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       elseif boundaries(i,j, 1) == 3
-        fprintf(fileID,' W    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+        fprintf(fileID,' O    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+      elseif boundaries(i,j, 1) == 4
+        fprintf(fileID,' SYM  %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
+      elseif boundaries(i,j, 1) == 5
+        fprintf(fileID,' v    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       else
         fprintf(fileID,' E    %3d %13.5e %13.5e %13.5e %13.5e %13.5e\n', i, 0, 0, 0, 0, 0);
       end

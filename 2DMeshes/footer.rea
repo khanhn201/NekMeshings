@@ -23,7 +23,7 @@ C
   F      COORDINATES
   T      VELOCITY
   T      PRESSURE
-  T      TEMPERATURE
+  F      TEMPERATURE
   F      TEMPERATURE GRADIENT
             0      PASSIVE SCALARS
   ***** OBJECT SPECIFICATION *****
@@ -31,3 +31,4 @@ C
        0 Volume  Objects
        0 Edge    Objects
        0 Point   Objects
+

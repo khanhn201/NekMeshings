@@ -3,29 +3,29 @@
             2 DIMENSIONAL RUN
           103 PARAMETERS FOLLOW
        1.000000         p01 DENSITY
-      -1400.000         p02 VISCOS
+      -200.000         p02 VISCOS
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00     p07 RHOCP
-      -4000.000         p08 CONDUCT
+       1.000000         p08 CONDUCT
       0.0000000E+00
       0.0000000E+00     p10 FINTIME
-       4000.000         p11 NSTEPS
-      1.0000000E-03     p12 DT
+       100000.000         p11 NSTEPS
+      1.0000000E-01     p12 DT
       0.0000000E+00     p13 IOCOMM
       0.0000000E+00     p14 IOTIME
-      100.0000         p15 IOSTEP
+      500.0000         p15 IOSTEP
       0.0000000E+00     p16 PSSOLVER
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
-      1.0000000E-06     p21 DIVERGENCE
-      1.0000000E-08     p22 HELMHOLTZ
+      1.0000000E-07     p21 DIVERGENCE
+      1.0000000E-09     p22 HELMHOLTZ
       0.0000000E+00     p23 NPSCAL
-      1.0000000E-04     p24 TOLREL
+      1.0000000E-10     p24 TOLREL
       1.0000000E-05     p25 TOLABS
        1.000000         p26 COURANT/NTAU
        3.000000         p27 TORDER
@@ -94,9 +94,9 @@
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
-       20.0000         p93 Numbr of prev pressure solns saved
-       5.000000         p94 start projecting vel. after p94 step
-       5.000000         p95 start projecting pr after p95 step
+       0.00000         p93 Numbr of prev pressure solns saved
+       0.0000000         p94 start projecting vel. after p94 step
+       0.0000000         p95 start projecting pr after p95 step
       0.0000000E+00
       0.0000000E+00
       0.0000000E+00
@@ -104,7 +104,7 @@
       0.0000000E+00     p100 reserved
       0.0000000E+00     p101   No. of additional filter modes
       0.0000000E+00
-      5.0000000E-03     p103   weight of stabilizing filter (.01)
+      0.5000000E-01     p103   weight of stabilizing filter (.01)
       4  Lines of passive scalar data follows2 CONDUCT; 2RHOCP
    1.00000       1.00000       1.00000       1.00000       1.00000
    1.00000       1.00000       1.00000       1.00000
@@ -124,4 +124,4 @@
   F     IFKEPS
   F     IFMVBD
   F     IFCHAR
-   25.0000       25.0000      -5.00000      -15.0000     XFAC,YFAC,XZERO,YZERO
+   3.33333       3.33333     -0.833333      -1.16667     XFAC,YFAC,XZERO,YZERO
