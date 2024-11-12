@@ -24,14 +24,12 @@ def export_rea(filename, elements, boundaries):
         file.write(' ***** FLUID   BOUNDARY CONDITIONS ***** \n')
         for i in range(n):
             for j in range(6):
-                if boundaries[i, j, 0] == 1:
+                if boundaries[i, j] == 4:
                     file.write(f' W    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif boundaries[i, j, 0] == 2:
+                elif boundaries[i, j] == 2:
                     file.write(f' v    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif boundaries[i, j, 0] == 3:
+                elif boundaries[i, j] == 3:
                     file.write(f' O    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif boundaries[i, j, 0] == 4:
-                    file.write(f' int  {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
                 else:
                     file.write(f' E    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
 

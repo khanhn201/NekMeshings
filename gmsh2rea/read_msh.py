@@ -45,6 +45,16 @@ msh_file = "./turbine.msh"
 gmsh.initialize()
 gmsh.open(msh_file)
 
+physical_groups = gmsh.model.getPhysicalGroups()
+physical_3d_groups = [group for group in physical_groups if group[0] == 3]
+assert len(physical_3d_groups) == 1, f'expected one 3D physical group, got {len(physical_3d_groups)}'
+physical_2d_groups = [group for group in physical_groups if group[0] == 2]
+print(f'found {len(physical_2d_groups)} surface groups')
+
+
+
+
+# Start
 node_tags, node_coords, _ = gmsh.model.mesh.getNodes()
 node_dict = {tag: node_coords[3*i:3*(i+1)] for i, tag in enumerate(node_tags)}
 
@@ -52,22 +62,26 @@ _, element_tags, node_tags = gmsh.model.mesh.getElements(dim=3)
 element_tags = element_tags[0]
 node_tags = node_tags[0]
 
-print(gmsh.model.getPhysicalGroups())
 
-_, surface_element_tags, surface_node_tags = gmsh.model.mesh.getElements(dim=2)
-surface_element_tags = surface_element_tags[0]
-surface_node_tags = surface_node_tags[0]
+face_nodes_to_physical_2d = {}
+for group in physical_2d_groups:
+    dim, tag = group
+    entities = gmsh.model.getEntitiesForPhysicalGroup(dim, tag)
+    for entity in entities:
+        _, entity_element_tags, entity_element_nodes = gmsh.model.mesh.getElements(dim, entity)
+        entity_element_tags = entity_element_tags[0]
+        entity_element_nodes = entity_element_nodes[0]
+        for i in range(len(entity_element_tags)):
+            nodes_in_faces = entity_element_nodes[8*i:8*i+4]
+            nodes_in_faces.sort()
+            face_nodes_to_physical_2d[tuple(nodes_in_faces)] = tag
 
-print(element_tags, len(element_tags))
-print(node_tags, len(node_tags))
-print(surface_element_tags, len(surface_element_tags))
-print(surface_node_tags, len(surface_node_tags))
 
-        
 n_element = 0
 count_left_hand = 0
 elements = []
-surface_faces = []
+boundary_conditions = []
+
 for i, tags in enumerate(element_tags):
     n_element += 1
     nodes = node_tags[20*i:20*i+8]
@@ -75,17 +89,24 @@ for i, tags in enumerate(element_tags):
     if is_left_handed(node_coords):
         count_left_hand += 1
         # plotElement(nodeCoords)
-        
     elements.append(node_coords)
-
+    
+    # Check if face is boundary condition
     for face_num, face in enumerate(faces):
         face_nodes = [nodes[node] for node in face]
-        if all(node in surface_node_tags for node in face_nodes):
-            surface_faces.append((n_element, face_num))
+        face_nodes.sort()
+        tag = face_nodes_to_physical_2d.get(tuple(face_nodes))
+        if tag:
+            boundary_conditions.append((n_element, face_num, tag))
+
 
 elements = np.array(elements)
 print(elements.shape)
-print(len(surface_faces))
 print(f'found {count_left_hand} left-handed elements')
+
+print(f'found {len(boundary_conditions)} surface boundary conditions')
+boundaries = np.zeros((n_element, 6))
+for element, face, tag in boundary_conditions:
+    boundaries[element, face] = tag
 gmsh.finalize()
-export_rea('output.rea', elements)
+export_rea('output.rea', elements, boundaries)
