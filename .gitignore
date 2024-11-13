@@ -1,4 +1,6 @@
 octave-workspace
+__pycache__
 *.txt
 *.rea
+*.msh
 *.his

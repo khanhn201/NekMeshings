@@ -24,11 +24,17 @@ def export_rea(filename, elements, boundaries):
         file.write(' ***** FLUID   BOUNDARY CONDITIONS ***** \n')
         for i in range(n):
             for j in range(6):
-                if boundaries[i, j] == 4:
+                k = [item[2] for item in boundaries if item[0]==i and item[1] == j]
+                if len(k) == 0:
+                    k = 0
+                else:
+                    k = k[0]
+
+                if k == 4:
                     file.write(f' W    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif boundaries[i, j] == 2:
+                elif k == 2:
                     file.write(f' v    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif boundaries[i, j] == 3:
+                elif k == 3:
                     file.write(f' O    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
                 else:
                     file.write(f' E    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
@@ -38,4 +44,3 @@ def export_rea(filename, elements, boundaries):
             for line in footer_file:
                 file.write(line)
 
-        file.write('\n')
