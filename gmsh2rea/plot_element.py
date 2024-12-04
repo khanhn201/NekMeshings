@@ -133,6 +133,8 @@ def plot_hex_elements(hex_elements, hex_boundaries):
     
     # Highlight boundaries with specific colors
     for (element_idx, face, tag) in hex_boundaries:
+        if tag != 4:
+            continue
         color = boundary_colors[tag % len(boundary_colors)]
         hex_element = hex_elements[element_idx]
         vertices = [hex_element[i] for i in range(8)]
@@ -157,3 +159,35 @@ def plot_hex_elements(hex_elements, hex_boundaries):
     ax.set_zlim([z_min, z_max])
     # Show the plot
     plt.show()
+    
+def plot_faces(faces_with_tag1):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    coords = []
+    # Loop through each face
+    for face in faces_with_tag1:
+        # Convert to a numpy array for easier manipulation
+        face_coords = np.array(face)
+        
+        # Add a polygon for the face
+        poly = Poly3DCollection([face_coords], alpha=0.7, edgecolor="black")
+        poly.set_alpha(0.5)
+        ax.add_collection3d(poly)
+        coords.append(face_coords)
+        
+    # Set labels and aspect
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
+    all_vertices = np.concatenate(faces_with_tag1)
+    x_min, y_min, z_min = np.min(all_vertices, axis=0)
+    x_max, y_max, z_max = np.max(all_vertices, axis=0)
+    ax.set_xlim([x_min, x_max])
+    ax.set_ylim([y_min, y_max])
+    ax.set_zlim([z_min, z_max])
+
+
+    
+    plt.show()
+

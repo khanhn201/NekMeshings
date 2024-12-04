@@ -4,3 +4,4 @@ __pycache__
 *.rea
 *.msh
 *.his
+*.npy
