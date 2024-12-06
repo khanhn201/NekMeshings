@@ -5,14 +5,6 @@ import matplotlib.pyplot as plt
 
 from scipy.interpolate import splprep, splev
 
-def splinefit(points):
-    min_index = np.argmin(points[:, 1])
-    points = np.roll(points, -min_index, axis=0)
-    points = np.vstack([points, points[0]])
-    max_index = np.argmax(points[:, 1])
-    tck, u = splprep([points[:, 1], points[:, 2]], s=0, per=True)
-    return tck, u[max_index]
-
     
 def angular_force(s1, s2, s3, k_theta=1.0):
     s1_norm = np.linalg.norm(s1)
@@ -34,14 +26,23 @@ def angular_force(s1, s2, s3, k_theta=1.0):
     net_force = force_spring_1 + force_spring_2
     return net_force
 
+
+def splinefit(points):
+    min_index = np.argmin(points[:, 1])
+    points = np.roll(points, -min_index, axis=0)
+    points = np.vstack([points, points[0]])
+    max_index = np.argmax(points[:, 1])
+    tck, u = splprep([points[:, 1], points[:, 2]], s=0, per=True)
+    return tck, u[max_index]
+
 def extrude_slice_gordonhall(slice):
     """
         slice: numpy array of shape (N, 3)
         - ordered series of points along the slice
         - not closed
     """
-    n_segments = 30
-    k_max = 20
+    n_segments = 20
+    k_max = 15
     x = slice[0,0]
     tck, param_at_max = splinefit(slice)
     s_fine = np.concatenate([

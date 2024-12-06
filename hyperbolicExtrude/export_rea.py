@@ -30,13 +30,13 @@ def export_rea(filename, elements, boundaries):
                 else:
                     k = k[0]
 
-                if k == 4:
+                if k == 1:
                     file.write(f' W    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
                 elif k == 2:
                     file.write(f' int  {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
                 elif k == 3:
                     file.write(f' O    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
-                elif k == 5:
+                elif k == 4:
                     file.write(f' v    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
                 else:
                     file.write(f' E    {i+1:3d} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e} {0:13.5e}\n')
