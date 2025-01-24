@@ -32,6 +32,8 @@ slice_positions = np.concatenate([
     np.linspace(1250, 5000, slice_count//4)
 ])
 slices = slice_surface(elements, slice_positions)
+print(slices[0][0])
+print(slices[-1][0])
 plot_slices_3d(slices)
 
 for i in range(len(slice_positions)):
@@ -44,13 +46,13 @@ for i in range(len(slice_positions)):
         for row in slices[i]:
             f.write(f"{row[0]} {row[1]} {row[2]}\n")
 
-print("Extruding slices")
-extruded_volume = []
-for i in range(len(slice_positions)):
-    extruded = extrude_slice_gordonhall(slices[i])
-    extruded_volume.append(extruded)
-extruded_volume = np.array(extruded_volume)
-np.save("extruded_volume.npy", extruded_volume)
+# print("Extruding slices")
+# extruded_volume = []
+# for i in range(len(slice_positions)):
+#     extruded = extrude_slice_gordonhall(slices[i])
+#     extruded_volume.append(extruded)
+# extruded_volume = np.array(extruded_volume)
+# np.save("extruded_volume.npy", extruded_volume)
 
 
 def check_lefthand(element):
