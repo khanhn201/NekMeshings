@@ -1,13 +1,13 @@
 
 function [elements,boundaries] = extrudeSliceQuad(pp, arc_length, arc_length_at_max_y)
-    n_top = 7;
+    n_top = 8;
     n_leading = 3;
-    n_bottom = 7;
+    n_bottom = 8;
 
     k_max = n_leading;
     k_outer = 2;
     mult = 1.7;
-    diamond_mult = 1.1;
+    diamond_mult = 1.5;
     
     R_a = 800; % Bounding rect length in y
     R_t = 400; % Bounding rect top
@@ -163,9 +163,10 @@ function [elements,boundaries] = extrudeSliceQuad(pp, arc_length, arc_length_at_
     left_diamond_points = [
         point_at_min';
         (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_t]';
-        diamond_mult*(1-delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
+        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
         (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_b]';
     ];
+ 
     for k = 1:k_max+1
         layer_next = [];
 
@@ -190,7 +191,7 @@ function [elements,boundaries] = extrudeSliceQuad(pp, arc_length, arc_length_at_
 
     % Quad left outer
     left_diamond_top_points = [
-        diamond_mult*(1-delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
+        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
         (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_t]';
         [x; -R_a; R_t]';
         [x; -R_a; (R_t + R_b)/2]';
@@ -217,7 +218,7 @@ function [elements,boundaries] = extrudeSliceQuad(pp, arc_length, arc_length_at_
         layer_prev = layer_next;
     end
     left_diamond_bottom_points = [
-        diamond_mult*(1-delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
+        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
         [x; -R_a; (R_t + R_b)/2]';
         [x; -R_a; R_b]';
         (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_b]';
@@ -243,9 +244,8 @@ function [elements,boundaries] = extrudeSliceQuad(pp, arc_length, arc_length_at_
         end
         layer_prev = layer_next;
     end
+
     checkCounterClockwise(elements)
-
-
 end
 
 function U=bilinearInterp(corners, s, t, sp, tp)
