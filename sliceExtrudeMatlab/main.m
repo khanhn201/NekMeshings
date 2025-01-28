@@ -1,11 +1,12 @@
 filename = 'slices/slice0049.txt';
+filename = 'slices/slice0000.txt';
 slice = readSliceFile(filename);
 [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-[elements, boundaries] = meshOuter(pp, arc_length, arc_length_at_max_y);
-% [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
-% elements = [elementsOuter; elementsInner;];
+[elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y);
+[elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
+elements = [elementsOuter; elementsInner;];
 % boundaries = boundariesOuter;
-% plotElements(elements, boundaries);
+plotElements(elements, boundaries);
 
 
 % Mesh slices

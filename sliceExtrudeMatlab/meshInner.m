@@ -52,21 +52,25 @@ end
 
 function p4 = findBisectNode(p1, p2, p3)
     % Vectors defining the plane
-    P1 = p1(2:3);
-    P2 = p2(2:3);
-    P3 = p3(2:3);
-    v12 = P2 - P1; % Vector from P1 to P2
-    v13 = P3 - P1; % Vector from P1 to P3
-
-    A = [v12(1), v12(2);
-         v13(1), v13(2)];
-    b = [dot(v12, P2);
-         dot(v13, P3)];
-    P4 = (A \ b)';
-    p4= [];
-    p4(1) = p1(1);
-    p4(2:3) = P4;
+    p4 = p2 - p1 + p3;
 end
+% function p4 = findBisectNode(p1, p2, p3)
+%     % Vectors defining the plane
+%     P1 = p1(2:3);
+%     P2 = p2(2:3);
+%     P3 = p3(2:3);
+%     v12 = P2 - P1; % Vector from P1 to P2
+%     v13 = P3 - P1; % Vector from P1 to P3
+%
+%     A = [v12(1), v12(2);
+%          v13(1), v13(2)];
+%     b = [dot(v12, P2);
+%          dot(v13, P3)];
+%     P4 = (A \ b)';
+%     p4= [];
+%     p4(1) = p1(1);
+%     p4(2:3) = P4;
+% end
 
 function U=bilinearInterp(corners, s, t, sp, tp)
     P0_t = (1-t) * corners(1, :) + t * corners(2, :);
