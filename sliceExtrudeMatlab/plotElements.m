@@ -12,11 +12,12 @@ function plotElements(elements, boundaries)
         x = [x; x(1)];
         y = [y; y(1)];
         z = [z; z(1)];
-        if ismember(k, boundaries(:, 1))
-            plot(y, z, 'r-', 'LineWidth', 0.5);
-        else
-            plot(y, z, 'k-', 'LineWidth', 0.5);
-        end
+        % if ismember(k, boundaries(:, 1))
+        %     plot(y, z, 'r-', 'LineWidth', 0.5);
+        % else
+        %     plot(y, z, 'k-', 'LineWidth', 0.5);
+        % end
+        plot(y, z, 'k-', 'LineWidth', 0.5);
 
     end
     axis equal;
