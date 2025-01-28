@@ -194,7 +194,9 @@ for k = 2:size(zs,1)
     end
 end
 
+size(elements)
+size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-% plotBC(elements, boundaries)
+plotBC(elements, boundaries)

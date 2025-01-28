@@ -27,13 +27,13 @@ slice_count = 208
 slice_positions = np.concatenate([
     np.linspace(-5000, -1250, slice_count//4, endpoint=False),
     np.linspace(-1250, -500, (slice_count//16)*3, endpoint=False),
-    np.linspace(-500, 500, slice_count//8, endpoint=False),
+    np.linspace(-500, 0, slice_count//16, endpoint=False),
+    np.linspace(0, 500, slice_count//16, endpoint=False),
     np.linspace(500, 1250, (slice_count//16)*3, endpoint=False),
-    np.linspace(1250, 5000, slice_count//4)
+    np.linspace(1250, 5000, slice_count//4+1)
 ])
+
 slices = slice_surface(elements, slice_positions)
-print(slices[0][0])
-print(slices[-1][0])
 plot_slices_3d(slices)
 
 for i in range(len(slice_positions)):
@@ -45,6 +45,7 @@ for i in range(len(slice_positions)):
         f.write('x y z\n')
         for row in slices[i]:
             f.write(f"{row[0]} {row[1]} {row[2]}\n")
+print("done exporting")
 
 # print("Extruding slices")
 # extruded_volume = []
