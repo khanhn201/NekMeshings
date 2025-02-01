@@ -5,8 +5,8 @@ slice = readSliceFile(filename);
 [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y);
 [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
 elements = [elementsOuter; elementsInner;];
-% boundaries = boundariesOuter;
-plotElements(elements, boundaries);
+boundaries = boundariesOuter;
+% plotElements(elements, boundaries);
 
 
 % Mesh slices
@@ -45,9 +45,11 @@ for k = 1:(numSlices - 1)
             if tag == 1
                 boundaries(end+1, :) = [size(elements,1); 3; 1];
             end
-            if tag == 2 || tag == 3
+            if tag == 2 
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+            end
+            if tag == 3
+                boundaries(end+1, :) = [size(elements,1); 1; 3];
             end
         end
     end
@@ -72,7 +74,7 @@ for i = 0:0
 
         elements(end+1, :, :) = element;
         boundaries(end+1, :) = [size(elements,1); 6; 1];
-        boundaries(end+1, :) = [size(elements,1); 5; 2];
+        boundaries(end+1, :) = [size(elements,1); 5; 3];
     end
     for elem = 1:size(elementsOuter, 1)
         layer_k = squeeze(elementsOuter(elem,:, :)); 
@@ -82,13 +84,16 @@ for i = 0:0
         checkLeftHanded(element);
 
         elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 5; 2];
+        boundaries(end+1, :) = [size(elements,1); 5; 3];
 
         [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
         if isBoundary
             tag = sliceBoundaries(idx, 2);
-            if tag == 2 || tag == 3
+            if tag == 2 
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
+            end
+            if tag == 3
+                boundaries(end+1, :) = [size(elements,1); 1; 3];
             end
         end
     end
@@ -109,7 +114,7 @@ for i = 208:208
 
         elements(end+1, :, :) = element;
         boundaries(end+1, :) = [size(elements,1); 5; 1];
-        boundaries(end+1, :) = [size(elements,1); 6; 2];
+        boundaries(end+1, :) = [size(elements,1); 6; 3];
     end
     for elem = 1:size(elementsOuter, 1)
         layer_k = squeeze(elementsOuter(elem,:, :)); 
@@ -119,13 +124,16 @@ for i = 208:208
         checkLeftHanded(element);
 
         elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 6; 2];
+        boundaries(end+1, :) = [size(elements,1); 6; 3];
 
         [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
         if isBoundary
             tag = sliceBoundaries(idx, 2);
-            if tag == 2 || tag == 3
+            if tag == 2 
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
+            end
+            if tag == 3
+                boundaries(end+1, :) = [size(elements,1); 1; 3];
             end
         end
     end
@@ -139,7 +147,7 @@ xs = xs(half_pos:end);
 xs(end+1) = R_x;
 [cylElements, cylBoundaries] = wrapCylinder(xs);
 config
-zs = linspace(R_b, R_t, k_inner*2)(:);
+zs = linspace(R_b, R_t, k_inner*2 + 1)(:);
 for k = 2:size(zs,1)
     z_prev = zs(k-1);
     z = zs(k);
@@ -161,7 +169,7 @@ for k = 2:size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 5; 3];
         end
         if k == size(zs,1)
-            boundaries(end+1, :) = [size(elements,1); 6; 3];
+            boundaries(end+1, :) = [size(elements,1); 6; 2];
         end
     end
 end
@@ -190,7 +198,7 @@ for k = 2:size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 6; 3];
         end
         if k == size(zs,1)
-            boundaries(end+1, :) = [size(elements,1); 5; 3];
+            boundaries(end+1, :) = [size(elements,1); 5; 2];
         end
     end
 end
