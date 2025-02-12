@@ -110,6 +110,7 @@ function [elements, boundaries] = wrapCylinder(xs)
         end
 
     end
+    elements(:, :, 2) = elements(:, :, 2)/xs(end)*(xs(end)-R_a);
     elements(:, :, 2) = elements(:, :, 2) + R_a;
     checkCounterClockwise(elements);
 end

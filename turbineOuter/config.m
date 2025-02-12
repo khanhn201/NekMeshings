@@ -1,9 +1,9 @@
 n_segs = 4;
-k_inner = 3;
-k_outer = 4;
-k_upstream = 5;
-k_downstream = 10;
-k_blade = 4;
+k_inner = 9;
+k_outer = 10;
+k_upstream = 11;
+k_downstream = 11;
+k_blade = 6;
 
 mult = 1.7;
 delta_inner = 0.4;

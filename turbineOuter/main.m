@@ -4,7 +4,8 @@
 elements = []
 boundaries = []
 config
-xs = linspace(R_t, R_t+R_upstream, k_upstream);
+r = (R_t + R_upstream) / R_t;
+xs = R_t * (r .^ linspace(0, 1, k_upstream));
 for k = 2:size(xs,2)
     x_prev = xs(k-1);
     x = xs(k);
@@ -74,7 +75,8 @@ for k = 2:size(xs,2)
     end
 end
 
-xs = linspace(R_b, R_b-R_downstream, k_downstream);
+r = -(R_b - R_downstream) / R_t;
+xs = R_b * (r .^ linspace(0, 1, k_downstream))
 for k = 2:size(xs,2)
     x_prev = xs(k-1);
     x = xs(k);

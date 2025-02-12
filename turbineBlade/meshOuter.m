@@ -1,4 +1,4 @@
-function [elements,boundaries] = meshOuter(pp, arc_length, arc_length_at_max_y)
+function [elements,boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y)
     config
 
     s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
@@ -14,6 +14,9 @@ function [elements,boundaries] = meshOuter(pp, arc_length, arc_length_at_max_y)
     elements = [];
     boundaries = [];
 
+    all_points = [ppval(pp, s_fine)'; points_top(1,:)];
+    pp_coarse = splinefit([s_fine'; arc_length], all_points', [s_fine'; arc_length], "periodic", true);
+    %
 
     % Quad top
     for k = 1:k_inner+1

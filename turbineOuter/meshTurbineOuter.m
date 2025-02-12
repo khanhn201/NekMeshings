@@ -84,19 +84,29 @@ function [elements,boundaries] = meshTurbineOuter()
         end
     end
 
-
+    r = 1.4;  % Adjust as needed for geometric progression
+    scale_factors = r.^((1:(k_outer+1)) - 1);
+    scale_factors = scale_factors - 1;
+    scale_factors = scale_factors/max(scale_factors);
     % Outer
     for k = 1:k_outer
         for i = 1:n_segs
+            s = scale_factors(k+1);
+            skm1 = scale_factors(k);
             p1 = [0, -R*cosd(45 + (i)/n_segs*90), R*sind(45 + (i)/n_segs*90)];
             p2 = [0, -R*cosd(45 + (i-1)/n_segs*90), R*sind(45 + (i-1)/n_segs*90)];
             p3 = [0, (i-1)/n_segs * 2*R_far_horizontal - R_far_horizontal, R_far_top];
             p4 = [0, (i)/n_segs * 2*R_far_horizontal - R_far_horizontal, R_far_top];
+            
             element(1,:) = (k_outer-k+1)*p1/k_outer + (k-1)*p4/k_outer;
             element(2,:) = (k_outer-k)*p1/k_outer + (k)*p4/k_outer;
             element(3,:) = (k_outer-k)*p2/k_outer + (k)*p3/k_outer;
             element(4,:) = (k_outer-k+1)*p2/k_outer + (k-1)*p3/k_outer;
 
+            element(1,:) = (1-skm1)*p1 + skm1*p4;
+            element(2,:) = (1-s)*p1 + s*p4;
+            element(3,:) = (1-s)*p2 + s*p3;
+            element(4,:) = (1-skm1)*p2 + skm1*p3;
             elements(end+1, :, :) = element;
             if k == 1
                 boundaries(end+1, :) = [size(elements, 1); 2;];
@@ -108,14 +118,22 @@ function [elements,boundaries] = meshTurbineOuter()
     end
     for k = 1:k_outer
         for i = 1:n_segs
+            s = scale_factors(k+1);
+            skm1 = scale_factors(k);
             p1 = [0, -R*cosd(135 + (i)/n_segs*90), R*sind(135 + (i)/n_segs*90)];
             p2 = [0, -R*cosd(135 + (i-1)/n_segs*90), R*sind(135 + (i-1)/n_segs*90)];
             p3 = [0, R_far_horizontal, (n_segs-i+1)/n_segs * (R_far_top-R_far_bottom) + R_far_bottom];
             p4 = [0, R_far_horizontal, (n_segs-i)/n_segs * (R_far_top-R_far_bottom) + R_far_bottom];
-            element(1,:) = (k_outer-k+1)*p1/k_outer + (k-1)*p4/k_outer;
-            element(2,:) = (k_outer-k)*p1/k_outer + (k)*p4/k_outer;
-            element(3,:) = (k_outer-k)*p2/k_outer + (k)*p3/k_outer;
-            element(4,:) = (k_outer-k+1)*p2/k_outer + (k-1)*p3/k_outer;
+            % element(1,:) = (k_outer-k+1)*p1/k_outer + (k-1)*p4/k_outer;
+            % element(2,:) = (k_outer-k)*p1/k_outer + (k)*p4/k_outer;
+            % element(3,:) = (k_outer-k)*p2/k_outer + (k)*p3/k_outer;
+            % element(4,:) = (k_outer-k+1)*p2/k_outer + (k-1)*p3/k_outer;
+
+            element(1,:) = (1-skm1)*p1 + skm1*p4;
+            element(2,:) = (1-s)*p1 + s*p4;
+            element(3,:) = (1-s)*p2 + s*p3;
+            element(4,:) = (1-skm1)*p2 + skm1*p3;
+
 
             elements(end+1, :, :) = element;
             if k == 1
@@ -128,6 +146,8 @@ function [elements,boundaries] = meshTurbineOuter()
     end
     for k = 1:k_outer
         for i = 1:n_segs
+            s = scale_factors(k+1);
+            skm1 = scale_factors(k);
             p1 = [0, -R*cosd(45 + (i)/n_segs*90), -R*sind(45 + (i)/n_segs*90)];
             p2 = [0, -R*cosd(45 + (i-1)/n_segs*90), -R*sind(45 + (i-1)/n_segs*90)];
             p3 = [0, (i-1)/n_segs * 2*R_far_horizontal - R_far_horizontal, R_far_bottom];
@@ -136,6 +156,11 @@ function [elements,boundaries] = meshTurbineOuter()
             element(2,:) = (k_outer-k+1)*p2/k_outer + (k-1)*p3/k_outer;
             element(3,:) = (k_outer-k)*p2/k_outer + (k)*p3/k_outer;
             element(4,:) = (k_outer-k)*p1/k_outer + (k)*p4/k_outer;
+
+            element(1,:) = (1-skm1)*p1 + skm1*p4;
+            element(2,:) = (1-skm1)*p2 + skm1*p3;
+            element(3,:) = (1-s)*p2 + s*p3;
+            element(4,:) = (1-s)*p1 + s*p4;
 
             elements(end+1, :, :) = element;
             if k == 1
@@ -148,6 +173,8 @@ function [elements,boundaries] = meshTurbineOuter()
     end
     for k = 1:k_outer
         for i = 1:n_segs
+            s = scale_factors(k+1);
+            skm1 = scale_factors(k);
             p1 = [0, -R*cosd(-45 + (i)/n_segs*90), R*sind(-45 + (i)/n_segs*90)];
             p2 = [0, -R*cosd(-45 + (i-1)/n_segs*90), R*sind(-45 + (i-1)/n_segs*90)];
             p3 = [0, -R_far_horizontal, (i-1)/n_segs * (R_far_top-R_far_bottom) + R_far_bottom];
@@ -157,6 +184,10 @@ function [elements,boundaries] = meshTurbineOuter()
             element(3,:) = (k_outer-k)*p2/k_outer + (k)*p3/k_outer;
             element(4,:) = (k_outer-k+1)*p2/k_outer + (k-1)*p3/k_outer;
 
+            element(1,:) = (1-skm1)*p1 + skm1*p4;
+            element(2,:) = (1-s)*p1 + s*p4;
+            element(3,:) = (1-s)*p2 + s*p3;
+            element(4,:) = (1-skm1)*p2 + skm1*p3;
             elements(end+1, :, :) = element;
             if k == 1
                 boundaries(end+1, :) = [size(elements, 1); 8;];
