@@ -1,13 +1,14 @@
 % for i = 52:104:156
-for i = 52:104:52
+for i = 52:104:156
+% for i = 156:104:156
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
-    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elementsOuter, boundariesOuters, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
-    elements = [elementsOuter; elementsInner;];
-    boundaries = boundariesOuter;
-    plotElements(elements, boundaries);
+    x = slice(1,1)
+    flipped = false;
+    if x > 0
+        flipped = true;
+    end
+    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
 
     figure;
     hold on;
@@ -18,8 +19,14 @@ for i = 52:104:52
     legend;
     axis equal;
     grid on;
-    title('Fitted Spline to the Given Slice');
+    title('Fitted Spline to the Given Slice1');
     hold off;
+
+    [elementsOuter, boundariesOuter, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y, flipped);
+    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, flipped);
+    elements = [elementsOuter; elementsInner;];
+    boundaries = boundariesOuter;
+    plotElements(elements, boundaries);
 
     figure;
     hold on;
@@ -30,6 +37,6 @@ for i = 52:104:52
     legend;
     axis equal;
     grid on;
-    title('Fitted Spline to the Given Slice');
+    title('Fitted Spline to the Given Slice2');
     hold off;
 end

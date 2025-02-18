@@ -9,11 +9,16 @@ sliceSplines = {};
 for i = 0:slice_spacing:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
-    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elements, boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y);
+    x = slice(1,1);
+    flipped = false;
+    if x > 0
+        flipped = true;
+    end
+    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
+    [elements, boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y, flipped);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
-    xs(end+1) = slice(1,1);
+    xs(end+1) = x;
     sliceSplines{size(sliceElements,1)} = pp_coarse;
 end
 if ~ismember(0, xs) || norm(xs + flip(xs)) > 1e-6
@@ -26,13 +31,17 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
     splinePoints = [];
     x = [];
     for j=1:length(sliceSplines)
-        splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(i));
+        if (xs(j) <= 0)
+            splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(i));
+        else 
+            splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(mod(i + n_top-1, 2*n_top) + 1));
+        end
         x(end+1) = splinePoints(end, 1);
     end
     pp_coarse = spline(x, splinePoints');
     connectingSplines{i} = pp_coarse;
 end
-% plotSplines
+plotSplines
 
 % Connect slices
 elements = [];
@@ -58,13 +67,21 @@ for k = 1:(numSlices - 1)
                 spline2 = connectingSplines{count_wall+1};
                 spline4 = connectingSplines{count_wall};
 
-                spline1piece = spline1.coefs((count_wall-1)*3 + 1: (count_wall-1)*3 + 3,:);
-                spline1start = spline1.breaks(count_wall);
-                spline1end = spline1.breaks(count_wall + 1);
+                j = count_wall;
+                if xs(k) > 0
+                    j = mod(count_wall + n_top - 1, 2*n_top) + 1;
+                end
+                spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+                spline1start = spline1.breaks(j);
+                spline1end = spline1.breaks(j + 1);
 
-                spline3piece = spline3.coefs((count_wall-1)*3 + 1: (count_wall-1)*3 + 3,:);
-                spline3start = spline3.breaks(count_wall);
-                spline3end = spline3.breaks(count_wall + 1);
+                j = count_wall;
+                if xs(k+1) > 0
+                    j = mod(count_wall + n_top - 1, 2*n_top) + 1;
+                end
+                spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+                spline3start = spline3.breaks(j);
+                spline3end = spline3.breaks(j + 1);
 
                 spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
                 spline2start = spline2.breaks(k);
@@ -144,9 +161,9 @@ config
 for i = 0:0
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
-    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
+    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
+    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y, false);
+    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
         layer_k1 = squeeze(elementsInner(elem,:, :)); 
@@ -184,9 +201,9 @@ end
 for i = 208:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
-    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y);
+    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
+    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y, true);
+    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
         layer_k1 = squeeze(elementsInner(elem,:, :)); 

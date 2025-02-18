@@ -1,8 +1,12 @@
-function [elements,boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y)
+function [elements,boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y, flipped)
     config
 
     s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
           linspace(arc_length_at_max_y, arc_length, n_bottom+1)(1:end-1)];
+
+    if flipped == true 
+        s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
+    end
     points_top = ppval(pp, s_fine(1:n_top+1))';
     % points_leading = ppval(pp, s_fine(n_top + 1:n_top + 2*n_leading + 1))';
     points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];
@@ -14,9 +18,18 @@ function [elements,boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length
     elements = [];
     boundaries = [];
 
-    all_points = [ppval(pp, s_fine)'; points_top(1,:)];
-    pp_coarse = splinefit([s_fine'; arc_length], all_points', [s_fine'; arc_length], "periodic", true);
-    %
+    % pp_coarse = splinefit([s_fine'; arc_length], all_points', [s_fine'; arc_length], "periodic", true);
+    all_points = ppval(pp, s_fine)';
+    if flipped == true
+        s_fine = circshift(s_fine, -n_top);
+        all_points = circshift(all_points, -n_top);
+        s_fine = [s_fine'; arc_length_at_max_y];
+        all_points = [all_points; all_points(1, :)];
+    else
+        s_fine = [s_fine'; arc_length];
+        all_points = [all_points; points_top(1,:)];
+    end
+    pp_coarse = spline(s_fine, all_points');
 
     % Quad top
     for k = 1:k_inner+1

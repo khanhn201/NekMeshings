@@ -1,8 +1,11 @@
-function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y)
+function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, flipped)
     config
 
     s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
           linspace(arc_length_at_max_y, arc_length, n_bottom+1)(1:end-1)];
+    if flipped == true 
+        s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
+    end
     points_top = ppval(pp, s_fine(1:n_top+1))';
     % points_leading = ppval(pp, s_fine(n_top + 1:n_top + 2*n_leading + 1))';
     points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];

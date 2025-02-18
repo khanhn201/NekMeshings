@@ -1,4 +1,4 @@
-n_top = 12;
+n_top = 15;
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 % n_leading = 3;
 
@@ -10,7 +10,7 @@ diamond_mult = 1.5;
 
 % beta % spacing along airfoil;
 
-slice_spacing = 8;
+slice_spacing = 4;
 
 R_a = 800; % Bounding rect length in y (y from -R_a to R_a)
 R_t = 400; % Bounding rect top
