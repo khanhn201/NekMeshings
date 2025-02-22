@@ -1,14 +1,24 @@
 function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, flipped)
     config
 
-    s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
-          linspace(arc_length_at_max_y, arc_length, n_bottom+1)(1:end-1)];
+    % if omesh
+    s_fine = [linspace(0, arc_length_at_max_y, n_top + 2*k_inner +1)(1:end-1), ...
+          linspace(arc_length_at_max_y, arc_length, n_bottom + 2*k_inner + 1)(1:end-1)];
+
+    % if xmesh
+    %     s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
+    %     linspace(arc_length_at_max_y, arc_length, n_bottom+1)(1:end-1)];
+    %     points_top = ppval(pp, s_fine(1:n_top+1))';
+    %     points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];
+    %     n = n_top;
+
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
     end
-    points_top = ppval(pp, s_fine(1:n_top+1))';
-    % points_leading = ppval(pp, s_fine(n_top + 1:n_top + 2*n_leading + 1))';
-    points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];
+    points_top = ppval(pp, s_fine(1:n_top + 2*k_inner+1))';
+    points_bottom = [ppval(pp, s_fine(n_top + 2*k_inner + 1:end))'; points_top(1,:)];
+    n = n_top + 2*k_inner;
+
 
     point_at_min = ppval(pp, 0);
     point_at_max = ppval(pp, arc_length_at_max_y);
@@ -34,19 +44,19 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     elements(end+1, :, :) = element;
     boundaries(end+1, :) = [size(elements, 1); 10;];
 
-    for i = 2:n_top-1
+    for i = 2:n-1
         element = [];
         element(1,:) = points_top(i+1, :);
         element(2,:) = points_top(i,:);
-        element(3,:) = (i-2)/(n_top-2)*p24 + (n_top-i)/(n_top-2)*p14;
-        element(4,:) = (i-1)/(n_top-2)*p24 + (n_top-i-1)/(n_top-2)*p14;
+        element(3,:) = (i-2)/(n-2)*p24 + (n-i)/(n-2)*p14;
+        element(4,:) = (i-1)/(n-2)*p24 + (n-i-1)/(n-2)*p14;
         elements(end+1, :, :) = element;
         boundaries(end+1, :) = [size(elements, 1); 10;];
         element = [];
         element(1,:) = points_bottom(i+1, :);
         element(2,:) = points_bottom(i,:);
-        element(3,:) = (i-2)/(n_bottom-2)*p14 + (n_bottom-i)/(n_bottom-2)*p24;
-        element(4,:) = (i-1)/(n_bottom-2)*p14 + (n_bottom-i-1)/(n_bottom-2)*p24;
+        element(3,:) = (i-2)/(n-2)*p14 + (n-i)/(n-2)*p24;
+        element(4,:) = (i-1)/(n-2)*p14 + (n-i-1)/(n-2)*p24;
         elements(end+1, :, :) = element;
         boundaries(end+1, :) = [size(elements, 1); 10;];
     end
@@ -55,7 +65,7 @@ end
 
 function p4 = findBisectNode(p1, p2, p3)
     % Vectors defining the plane
-    p4 = p2 - p1 + p3;
+    p4 = p1 + 3/4*(p2 - 2*p1 + p3);
 end
 % function p4 = findBisectNode(p1, p2, p3)
 %     % Vectors defining the plane
@@ -104,7 +114,7 @@ function checkCounterClockwise(elements)
             cross_prod = cross(edge1, edge2);
             
             if cross_prod(1) <= 0
-                fprintf('Element %d is not counterclockwise at corner %d.\n', k, i);
+                fprintf('Inner Element %d is not counterclockwise at corner %d.\n', k, i);
             end
         end
     end

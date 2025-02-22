@@ -364,7 +364,7 @@ function checkCounterClockwise(elements)
             cross_prod = cross(edge1, edge2);
             
             if cross_prod(1) <= 0
-                fprintf('Element %d is not counterclockwise at corner %d.\n', k, i);
+                fprintf('Element Outer %d is not counterclockwise at corner %d.\n', k, i);
             end
         end
     end

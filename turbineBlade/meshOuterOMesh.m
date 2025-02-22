@@ -1,18 +1,21 @@
 function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped)
     config
 
-    s_fine = [linspace(0, arc_length_at_max_y, n_top+1)(1:end-1), ...
-          linspace(arc_length_at_max_y, arc_length, n_bottom+1)(1:end-1)];
+
+    s_fine = [linspace(0, arc_length_at_max_y, n_top + 2*k_inner +1)(1:end-1), ...
+          linspace(arc_length_at_max_y, arc_length, n_bottom + 2*k_inner + 1)(1:end-1)];
 
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
     end
-    points_top = ppval(pp, s_fine(1:n_top+1))';
+    points_top = ppval(pp, s_fine(1:n_top + 2*k_inner+1))';
     % points_leading = ppval(pp, s_fine(n_top + 1:n_top + 2*n_leading + 1))';
-    points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];
+    points_bottom = [ppval(pp, s_fine(n_top + 2*k_inner + 1:end))'; points_top(1,:)];
 
     point_at_min = ppval(pp, 0);
     point_at_max = ppval(pp, arc_length_at_max_y);
+    angle_offset = atan2(point_at_min(3), -point_at_min(2)) + atan2(-point_at_max(3), point_at_max(2));
+    angle_offset = angle_offset/2;
     x = point_at_min(1);
 
     elements = [];
@@ -21,44 +24,71 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     % pp_coarse = splinefit([s_fine'; arc_length], all_points', [s_fine'; arc_length], "periodic", true);
     all_points = ppval(pp, s_fine)';
     if flipped == true
-        s_fine = circshift(s_fine, -n_top);
-        all_points = circshift(all_points, -n_top);
-        s_fine = [s_fine'; arc_length_at_max_y];
-        all_points = [all_points; all_points(1, :)];
+        s_fine1 = circshift(s_fine, -n_top - 2*k_inner);
+        all_points1 = circshift(all_points, -n_top - 2*k_inner);
+        s_fine1 = [s_fine1'; arc_length_at_max_y];
+        all_points1 = [all_points1; all_points1(1, :)];
     else
-        s_fine = [s_fine'; arc_length];
-        all_points = [all_points; points_top(1,:)];
+        s_fine1 = [s_fine'; arc_length];
+        all_points1 = [all_points; points_top(1,:)];
     end
-    pp_coarse = spline(s_fine, all_points');
+    pp_coarse = spline(s_fine1, all_points1');
 
-    % Quad top
-    for k = 1:k_inner+1
+    layer_prev = all_points;
+    for k = 1:5
         layer_next = [];
-        s = (mult^k-mult)/(mult^(k_inner+1)-mult)*delta_inner;
-        for t = 1:n_top+1
-            r = (t - 1)/(n_top);
-            U = (1 - s) * points_top(t,:) + s * [x; -R_a + r*2*R_a; R_t]';
+        for t = 1:length(all_points)
+            p1 = all_points(t, :);
+            if t == 1
+                p2 = all_points(end, :);
+            else
+                p2 = all_points(t - 1, :);
+            end
+            if t == length(all_points)
+                p3 = all_points(1, :);
+            else
+                p3 = all_points(t + 1, :);
+            end
+            bisector = findBisect(p1, p2, p3);
+            U = p1 + 2*k*bisector;
             layer_next = [layer_next; U];
-            if (k > 1) && (t > 1)
+            if (t > 1)
                 element = [];
                 element(1,:) = layer_next(end, :);
                 element(2,:) = layer_next(end-1, :);
                 element(3,:) = layer_prev(t-1, :);
                 element(4,:) = layer_prev(t, :);
                 elements(end+1, :, :) = element;
-                if k == 2
+                if k == 1
                     boundaries(end+1, :) = [size(elements, 1); 1;];
                 end
             end
-        end        
+        end
+        element = [];
+        element(1,:) = layer_next(1, :);
+        element(2,:) = layer_next(end, :);
+        element(3,:) = layer_prev(end, :);
+        element(4,:) = layer_prev(1, :);
+        elements(end+1, :, :) = element;
+        if k == 1
+            boundaries(end+1, :) = [size(elements, 1); 1;];
+        end
+
         layer_prev = layer_next;
+        all_points = layer_next;
     end
+
+    % Quad top
     for k = 1:k_outer+1
         layer_next = [];
-        s = delta_inner + (1-delta_inner)*(k-1)/(k_outer);
+        s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        Rz = [1, 0, 0;
+              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
+              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              ];
         for t = 1:n_top+1
             r = (t - 1)/(n_top);
-            U = (1 - s) * points_top(t,:) + s * [x; -R_a + r*2*R_a; R_t]';
+            U = (1 - s) * all_points(t + k_inner,:) + s * (Rz*[x; -R_a + r*2*R_a; R_t])';
             layer_next = [layer_next; U];
             if (k > 1) && (t > 1)
                 element = [];
@@ -71,37 +101,20 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
                     boundaries(end+1, :) = [size(elements, 1); 2;];
                 end
             end
-        end
+        end        
         layer_prev = layer_next;
     end
     % Quad bottom
-    for k = 1:k_inner+1
-        layer_next = [];
-        s = (mult^k-mult)/(mult^(k_inner+1)-mult)*delta_inner;
-        for t = 1:n_bottom + 1
-            r = (t - 1)/(n_bottom);
-            U = (1 - s) * points_bottom(t,:) + s * [x; R_a - r*2*R_a; R_b]';
-            layer_next = [layer_next; U];
-            if (k > 1) && (t > 1)
-                element = [];
-                element(1,:) = layer_next(end, :);
-                element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(t-1, :);
-                element(4,:) = layer_prev(t, :);
-                elements(end+1, :, :) = element;
-                if k == 2
-                    boundaries(end+1, :) = [size(elements, 1); 1;];
-                end
-            end
-        end
-        layer_prev = layer_next;
-    end
     for k = 1:k_outer+1
         layer_next = [];
-        s = delta_inner + (1-delta_inner)*(k-1)/(k_outer);
+        s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        Rz = [1, 0, 0;
+              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
+              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              ];
         for t = 1:n_bottom + 1
             r = (t - 1)/(n_bottom);
-            U = (1 - s) * points_bottom(t,:) + s * [x; R_a - r*2*R_a; R_b]';
+            U = (1 - s) * all_points(t + n_top  + 3* k_inner,:) + s * (Rz *[x; R_a - r*2*R_a; R_b])';
             layer_next = [layer_next; U];
             if (k > 1) && (t > 1)
                 element = [];
@@ -117,212 +130,56 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
         end
         layer_prev = layer_next;
     end
-    % Quad right
-    % for k = 1:k_inner+1
-    %     layer_next = [];
-    %     s = (mult^k-mult)/(mult^(k_inner+1)-mult)*delta_inner;
-    %     for t = 1:2*n_leading + 1
-    %         r = (t - 1)/(2*n_leading);
-    %         U = (1 - s) * points_leading(t,:) + s * [x; R_a; R_t - r*(R_t-R_b)]';
-    %         layer_next = [layer_next; U];
-    %         if (k > 1) && (t > 1)
-    %             element = [];
-    %             element(1,:) = layer_next(end, :);
-    %             element(2,:) = layer_next(end-1, :);
-    %             element(3,:) = layer_prev(t-1, :);
-    %             element(4,:) = layer_prev(t, :);
-    %             elements(end+1, :, :) = element;
-    %             if k == 2
-    %                 boundaries(end+1, :) = [size(elements, 1); 1;];
-    %             end
-    %         end
-    %     end
-    %     layer_prev = layer_next;
-    % end
-    % for k = 1:k_outer+1
-    %     layer_next = [];
-    %     s = delta_inner + (1-delta_inner)*(k-1)/(k_outer);
-    %     for t = 1:2*n_leading + 1
-    %         r = (t - 1)/(2*n_leading);
-    %         U = (1 - s) * points_leading(t,:) + s * [x; R_a; R_t - r*(R_t-R_b)]';
-    %         layer_next = [layer_next; U];
-    %         if (k > 1) && (t > 1)
-    %             element = [];
-    %             element(1,:) = layer_next(end, :);
-    %             element(2,:) = layer_next(end-1, :);
-    %             element(3,:) = layer_prev(t-1, :);
-    %             element(4,:) = layer_prev(t, :);
-    %             elements(end+1, :, :) = element;
-    %             if k == k_outer+1
-    %                 boundaries(end+1, :) = [size(elements, 1); 4;];
-    %             end
-    %         end
-    %     end
-    %     layer_prev = layer_next;
-    % end
-
-    right_diamond_points = [
-        point_at_max';
-        (1-delta_inner)*point_at_max' + delta_inner*[x; R_a; R_b]';
-        (1-diamond_mult*delta_inner)*point_at_max' + diamond_mult*delta_inner*[x; R_a; (R_t + R_b)/2]';
-        (1-delta_inner)*point_at_max' + delta_inner*[x; R_a; R_t]';
-    ];
- 
-    for k = 1:k_inner+1
-        layer_next = [];
-
-        s = (mult^k-mult)/(mult^(k_inner+1)-mult);
-        sp = (k-1)/k_inner;
-        for tt = 1: k_inner+1
-            t = (mult^tt-mult)/(mult^(k_inner+1)-mult);
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(right_diamond_points, s, t, sp, tp);
-            layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
-                element = [];
-                element(1,:) = layer_next(end, :);
-                element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
-                elements(end+1, :, :) = element;
-            end
-        end
-        layer_prev = layer_next;
-    end
-
-    % Quad right outer
-    right_diamond_top_points = [
-        (1-delta_inner)*point_at_max' + delta_inner*[x; R_a; R_t]';
-        (1-diamond_mult*delta_inner)*point_at_max' + diamond_mult*delta_inner*[x; R_a; (R_t + R_b)/2]';
-        [x; R_a; (R_t + R_b)/2]';
-        [x; R_a; R_t]';
-    ];
-    for k = 1:k_outer+1
-        layer_next = [];
-        sp = (k-1)/k_outer;
-        for tt = 1: k_inner+1
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(right_diamond_top_points, sp, tp, sp, tp);
-            layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
-                element = [];
-                element(1,:) = layer_next(end, :);
-                element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
-                elements(end+1, :, :) = element;
-                if k == k_outer+1
-                    boundaries(end+1, :) = [size(elements, 1); 5;];
-                end
-            end
-        end
-        layer_prev = layer_next;
-    end
-    right_diamond_bottom_points = [
-        (1-diamond_mult*delta_inner)*point_at_max' + diamond_mult*delta_inner*[x; R_a; (R_t + R_b)/2]';
-        (1-delta_inner)*point_at_max' + delta_inner*[x; R_a; R_b]';
-        [x; R_a; R_b]';
-        [x; R_a; (R_t + R_b)/2]';
-    ];
-    for k = 1:k_outer+1
-        layer_next = [];
-        sp = (k-1)/k_outer;
-        for tt = 1: k_inner+1
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(right_diamond_bottom_points, sp, tp, sp, tp);
-            layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
-                element = [];
-                element(1,:) = layer_next(end, :);
-                element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
-                elements(end+1, :, :) = element;
-                if k == k_outer+1
-                    boundaries(end+1, :) = [size(elements, 1); 6;];
-                end
-            end
-        end
-        layer_prev = layer_next;
-    end
-
     % Quad left
-    left_diamond_points = [
-        point_at_min';
-        (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_t]';
-        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
-        (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_b]';
-    ];
- 
-    for k = 1:k_inner+1
-        layer_next = [];
-
-        s = (mult^k-mult)/(mult^(k_inner+1)-mult);
-        sp = (k-1)/k_inner;
-        for tt = 1: k_inner+1
-            t = (mult^tt-mult)/(mult^(k_inner+1)-mult);
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(left_diamond_points, s, t, sp, tp);
-            layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
-                element = [];
-                element(1,:) = layer_next(end, :);
-                element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
-                elements(end+1, :, :) = element;
-            end
-        end
-        layer_prev = layer_next;
-    end
-
-    % Quad left outer
-    left_diamond_top_points = [
-        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
-        (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_t]';
-        [x; -R_a; R_t]';
-        [x; -R_a; (R_t + R_b)/2]';
-    ];
     for k = 1:k_outer+1
         layer_next = [];
-        sp = (k-1)/k_outer;
-        for tt = 1: k_inner+1
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(left_diamond_top_points, sp, tp, sp, tp);
+        s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        Rz = [1, 0, 0;
+              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
+              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              ];
+        for t = 1:2*k_inner + 1
+            if t > k_inner
+                point = all_points(t-k_inner,:);
+            else
+                point = all_points(end - k_inner + t,:);
+            end
+            r = (t - 1)/(2*k_inner);
+            U = (1 - s) * point + s * (Rz *[x; -R_a; R_b + r*(R_t-R_b)])';
             layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
+            if (k > 1) && (t > 1)
                 element = [];
                 element(1,:) = layer_next(end, :);
                 element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
+                element(3,:) = layer_prev(t-1, :);
+                element(4,:) = layer_prev(t, :);
                 elements(end+1, :, :) = element;
                 if k == k_outer+1
-                    boundaries(end+1, :) = [size(elements, 1); 7;];
+                    boundaries(end+1, :) = [size(elements, 1); 8;];
                 end
             end
         end
         layer_prev = layer_next;
     end
-    left_diamond_bottom_points = [
-        (1-delta_inner)*point_at_min' + delta_inner*[x; -R_a; R_b]';
-        (1-diamond_mult*delta_inner)*point_at_min' + diamond_mult*delta_inner*[x; -R_a; (R_t + R_b)/2]';
-        [x; -R_a; (R_t + R_b)/2]';
-        [x; -R_a; R_b]';
-    ];
+    % Quad right
     for k = 1:k_outer+1
         layer_next = [];
-        sp = (k-1)/k_outer;
-        for tt = 1: k_inner+1
-            tp = (tt- 1)/k_inner;
-            U = bilinearInterp(left_diamond_bottom_points, sp, tp, sp, tp);
+        s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        Rz = [1, 0, 0;
+              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
+              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              ];
+        for t = 1:2*k_inner + 1
+            point = all_points(n_top + k_inner + t,:);
+            r = (t - 1)/(2*k_inner);
+            U = (1 - s) * point + s * (Rz*[x; R_a; R_t - r*(R_t-R_b)])';
             layer_next = [layer_next; U];
-            if (k > 1) && (tt > 1)
+            if (k > 1) && (t > 1)
                 element = [];
                 element(1,:) = layer_next(end, :);
                 element(2,:) = layer_next(end-1, :);
-                element(3,:) = layer_prev(tt-1, :);
-                element(4,:) = layer_prev(tt, :);
+                element(3,:) = layer_prev(t-1, :);
+                element(4,:) = layer_prev(t, :);
                 elements(end+1, :, :) = element;
                 if k == k_outer+1
                     boundaries(end+1, :) = [size(elements, 1); 8;];
@@ -371,3 +228,19 @@ function checkCounterClockwise(elements)
 end
 
 
+function bisector = findBisect(p1, p2, p3)
+    vec1 = p2 - p1;
+    vec2 = p3 - p1;
+    vec1 = vec1 / norm(vec1);
+    vec2 = vec2/ norm(vec2);
+    
+    bisector = vec1 + vec2;
+    bisector = bisector' / norm(bisector);
+    
+    cross_prod = cross([vec1], [vec2]);
+    
+    if cross_prod(1) > 0
+        bisector = -bisector;
+    end
+    bisector = bisector';
+end

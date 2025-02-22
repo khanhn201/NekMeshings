@@ -15,7 +15,7 @@ for i = 0:slice_spacing:208
         flipped = true;
     end
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
-    [elements, boundaries, pp_coarse] = meshOuter(pp, arc_length, arc_length_at_max_y, flipped);
+    [elements, boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
     xs(end+1) = x;
@@ -34,14 +34,15 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
         if (xs(j) <= 0)
             splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(i));
         else 
-            splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(mod(i + n_top-1, 2*n_top) + 1));
+            k = mod(i + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
+            splinePoints(end+1, :) = ppval(sliceSplines{j}, sliceSplines{j}.breaks(k));
         end
         x(end+1) = splinePoints(end, 1);
     end
     pp_coarse = spline(x, splinePoints');
     connectingSplines{i} = pp_coarse;
 end
-plotSplines
+% plotSplines
 
 % Connect slices
 elements = [];
@@ -69,7 +70,7 @@ for k = 1:(numSlices - 1)
 
                 j = count_wall;
                 if xs(k) > 0
-                    j = mod(count_wall + n_top - 1, 2*n_top) + 1;
+                    j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
                 end
                 spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
                 spline1start = spline1.breaks(j);
@@ -77,7 +78,7 @@ for k = 1:(numSlices - 1)
 
                 j = count_wall;
                 if xs(k+1) > 0
-                    j = mod(count_wall + n_top - 1, 2*n_top) + 1;
+                    j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
                 end
                 spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
                 spline3start = spline3.breaks(j);
@@ -162,7 +163,7 @@ for i = 0:0
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
-    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y, false);
+    [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, false);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
@@ -202,7 +203,7 @@ for i = 208:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
-    [elementsOuter, boundariesOuter] = meshOuter(pp, arc_length, arc_length_at_max_y, true);
+    [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, true);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
