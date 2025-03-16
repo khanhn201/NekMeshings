@@ -4,8 +4,9 @@
 elements = []
 boundaries = []
 config
-r = (R_t + R_upstream) / R_t;
-xs = R_t * (r .^ linspace(0, 1, k_upstream));
+k = 1:k_upstream;
+r = (mult_stream.^k-mult_stream)/(mult_stream^k_upstream-mult_stream);
+xs = (R_upstream-R_t) * r + R_t;
 for k = 2:size(xs,2)
     x_prev = xs(k-1);
     x = xs(k);
@@ -23,7 +24,7 @@ for k = 2:size(xs,2)
         if isBoundary
             tag = sliceBoundaries(idx,2);
             if tag ==  1 && k == 2
-                boundaries(end+1, :) = [size(elements,1); 5; 3];
+                boundaries(end+1, :) = [size(elements,1); 5; 5];
             end
             if tag ==  3 || tag == 5|| tag == 9
                 boundaries(end+1, :) = [size(elements,1); 2; 2];
@@ -75,8 +76,11 @@ for k = 2:size(xs,2)
     end
 end
 
-r = -(R_b - R_downstream) / R_t;
-xs = R_b * (r .^ linspace(0, 1, k_downstream))
+% r = -(R_b - R_downstream) / R_t;
+% xs = R_b * (r .^ linspace(0, 1, k_downstream))
+k = 1:k_downstream;
+r = (mult_stream.^k-mult_stream)/(mult_stream^k_downstream-mult_stream);
+xs = (R_downstream-R_b) * r + R_b;
 for k = 2:size(xs,2)
     x_prev = xs(k-1);
     x = xs(k);
@@ -94,7 +98,7 @@ for k = 2:size(xs,2)
         if isBoundary
             tag = sliceBoundaries(idx,2);
             if tag ==  1 && k == 2
-                boundaries(end+1, :) = [size(elements,1); 6; 3];
+                boundaries(end+1, :) = [size(elements,1); 6; 5];
             end
             if tag ==  3 || tag == 5|| tag == 9
                 boundaries(end+1, :) = [size(elements,1); 2; 2];

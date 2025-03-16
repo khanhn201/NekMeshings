@@ -16,6 +16,7 @@ function plotBC(elements, boundaries)
       0.8, 0.2, 0.2;  % Tag 1: Wall (Red)
       0.2, 0.8, 0.2;  % Tag 2: Inflow (Green)
       0.2, 0.2, 0.8;  % Tag 3: Outflow (Blue)
+      0.8, 0.2, 0.8;  % Tag 4: Internal (Purple)
       0.8, 0.2, 0.8   % Tag 4: Internal (Purple)
   ];
   % Plot bc_wall
@@ -49,8 +50,8 @@ function plotBC(elements, boundaries)
       elem = boundaries(i, 1);
       face = boundaries(i, 2);
       tag = boundaries(i, 3);
-      if tag == 1
-          coordinates = elements(elem, face_node_map(face, :), :);
+      coordinates = elements(elem, face_node_map(face, :), :);
+      if tag == 5
           x = coordinates(:,:, 1);
           y = coordinates(:,:, 2);
           z = coordinates(:,:, 3);
@@ -62,8 +63,8 @@ function plotBC(elements, boundaries)
       elem = boundaries(i, 1);
       face = boundaries(i, 2);
       tag = boundaries(i, 3);
-      coordinates = elements(elem, face_node_map(face, :), :);
-      if tag == 2
+      if tag == 1
+          coordinates = elements(elem, face_node_map(face, :), :);
           x = coordinates(:,:, 1);
           y = coordinates(:,:, 2);
           z = coordinates(:,:, 3);
@@ -71,6 +72,19 @@ function plotBC(elements, boundaries)
           fill3(x, y, z, color, 'FaceAlpha', 0.5, 'EdgeColor', 'black'); % Plot faces with transparency
       end
   end
+  % for i = 1:size(boundaries, 1)
+  %     elem = boundaries(i, 1);
+  %     face = boundaries(i, 2);
+  %     tag = boundaries(i, 3);
+  %     coordinates = elements(elem, face_node_map(face, :), :);
+  %     if tag == 2
+  %         x = coordinates(:,:, 1);
+  %         y = coordinates(:,:, 2);
+  %         z = coordinates(:,:, 3);
+  %         color = color_matrix(tag, :);
+  %         fill3(x, y, z, color, 'FaceAlpha', 0.5, 'EdgeColor', 'black'); % Plot faces with transparency
+  %     end
+  % end
   % Add labels and legend
   xlabel('X');
   ylabel('Y');

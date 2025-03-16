@@ -84,7 +84,7 @@ function [elements,boundaries] = meshTurbineOuter()
         end
     end
 
-    r = 1.4;  % Adjust as needed for geometric progression
+    r = mult;  % Adjust as needed for geometric progression
     scale_factors = r.^((1:(k_outer+1)) - 1);
     scale_factors = scale_factors - 1;
     scale_factors = scale_factors/max(scale_factors);

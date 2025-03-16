@@ -35,7 +35,7 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     pp_coarse = spline(s_fine1, all_points1');
 
     layer_prev = all_points;
-    for k = 1:5
+    for k = 1:2
         layer_next = [];
         for t = 1:length(all_points)
             p1 = all_points(t, :);
@@ -50,7 +50,7 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
                 p3 = all_points(t + 1, :);
             end
             bisector = findBisect(p1, p2, p3);
-            U = p1 + 2*k*bisector;
+            U = p1 + first_layer_thickness*(mult^k)*bisector;
             layer_next = [layer_next; U];
             if (t > 1)
                 element = [];

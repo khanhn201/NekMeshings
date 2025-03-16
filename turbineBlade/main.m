@@ -7,6 +7,7 @@ sliceElements = [];
 sliceBoundaries = [];
 sliceSplines = {};
 for i = 0:slice_spacing:208
+    i
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     x = slice(1,1);
@@ -16,6 +17,7 @@ for i = 0:slice_spacing:208
     end
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
     [elements, boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped);
+    [elements] = smoothMesh(elements, boundaries);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
     xs(end+1) = x;
@@ -147,7 +149,7 @@ for k = 1:(numSlices - 1)
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
             end
             if tag == 3
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+                boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
 
@@ -164,6 +166,7 @@ for i = 0:0
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
     [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, false);
+    [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
@@ -193,7 +196,7 @@ for i = 0:0
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
             end
             if tag == 3
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+                boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
     end
@@ -204,6 +207,7 @@ for i = 208:208
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
     [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, true);
+    [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
@@ -233,7 +237,7 @@ for i = 208:208
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
             end
             if tag == 3
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+                boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
     end
@@ -266,7 +270,7 @@ for k = 2:size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 3; 3];
         end
         if k == 2
-            boundaries(end+1, :) = [size(elements,1); 5; 2];
+            boundaries(end+1, :) = [size(elements,1); 5; 4];
         end
         if k == size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 6; 2];
@@ -295,7 +299,7 @@ for k = 2:size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 3; 3];
         end
         if k == 2
-            boundaries(end+1, :) = [size(elements,1); 6; 2];
+            boundaries(end+1, :) = [size(elements,1); 6; 4];
         end
         if k == size(zs,1)
             boundaries(end+1, :) = [size(elements,1); 5; 2];
@@ -308,4 +312,4 @@ size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-% plotBC(elements, boundaries)
+plotBC(elements, boundaries)
