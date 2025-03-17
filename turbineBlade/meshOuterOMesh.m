@@ -35,7 +35,7 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     pp_coarse = spline(s_fine1, all_points1');
 
     layer_prev = all_points;
-    for k = 1:2
+    for k = 1:3
         layer_next = [];
         for t = 1:length(all_points)
             p1 = all_points(t, :);
@@ -82,9 +82,17 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     for k = 1:k_outer+1
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        s_angle = min((k-1)/(k_outer-1),1);
+        s_angle = (1-e^(-s*4));
+        if k == 1
+            s_angle = 0;
+        end
+        if k >= k_outer
+            s_angle = 1;
+        end
         Rz = [1, 0, 0;
-              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
-              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              0, cos(angle_offset*(1-s_angle)), sin(angle_offset*(1-s_angle));
+              0, -sin(angle_offset*(1-s_angle)),  cos(angle_offset*(1-s_angle));
               ];
         for t = 1:n_top+1
             r = (t - 1)/(n_top);
@@ -108,9 +116,17 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     for k = 1:k_outer+1
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        s_angle = min((k-1)/(k_outer-1),1);
+        s_angle = (1-e^(-s*4));
+        if k == 1
+            s_angle = 0;
+        end
+        if k >= k_outer
+            s_angle = 1;
+        end
         Rz = [1, 0, 0;
-              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
-              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              0, cos(angle_offset*(1-s_angle)), sin(angle_offset*(1-s_angle));
+              0, -sin(angle_offset*(1-s_angle)),  cos(angle_offset*(1-s_angle));
               ];
         for t = 1:n_bottom + 1
             r = (t - 1)/(n_bottom);
@@ -134,9 +150,17 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     for k = 1:k_outer+1
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        s_angle = min((k-1)/(k_outer-1),1);
+        s_angle = (1-e^(-s*4));
+        if k == 1
+            s_angle = 0;
+        end
+        if k >= k_outer
+            s_angle = 1;
+        end
         Rz = [1, 0, 0;
-              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
-              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              0, cos(angle_offset*(1-s_angle)), sin(angle_offset*(1-s_angle));
+              0, -sin(angle_offset*(1-s_angle)),  cos(angle_offset*(1-s_angle));
               ];
         for t = 1:2*k_inner + 1
             if t > k_inner
@@ -165,9 +189,17 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     for k = 1:k_outer+1
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
+        s_angle = min((k-1)/(k_outer-1),1);
+        s_angle = (1-e^(-s*4));
+        if k == 1
+            s_angle = 0;
+        end
+        if k >= k_outer
+            s_angle = 1;
+        end
         Rz = [1, 0, 0;
-              0, cos(angle_offset*(1-s)), sin(angle_offset*(1-s));
-              0, -sin(angle_offset*(1-s)),  cos(angle_offset*(1-s));
+              0, cos(angle_offset*(1-s_angle)), sin(angle_offset*(1-s_angle));
+              0, -sin(angle_offset*(1-s_angle)),  cos(angle_offset*(1-s_angle));
               ];
         for t = 1:2*k_inner + 1
             point = all_points(n_top + k_inner + t,:);

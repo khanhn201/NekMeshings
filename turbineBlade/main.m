@@ -1,4 +1,5 @@
-
+rmdir('./surfaces/', 's')
+mkdir('./surfaces/')
 
 % Mesh slices
 config
@@ -168,37 +169,53 @@ for i = 0:0
     [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, false);
     [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
-    for elem = 1:size(elementsInner, 1)
-        layer_k = squeeze(elementsInner(elem,:, :)); 
-        layer_k1 = squeeze(elementsInner(elem,:, :)); 
-        layer_k1(:,1) = -R_x;
-        element = [layer_k1; layer_k]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 6; 1];
-        boundaries(end+1, :) = [size(elements,1); 5; 3];
-    end
-    for elem = 1:size(elementsOuter, 1)
-        layer_k = squeeze(elementsOuter(elem,:, :)); 
-        layer_k1 = squeeze(elementsOuter(elem,:, :)); 
-        layer_k1(:,1) = -R_x;
-        element = [layer_k1; layer_k]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 5; 3];
-
-        [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-        if isBoundary
-            tag = sliceBoundaries(idx, 2);
-            if tag == 2 
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+    for j = 1:length(R_end_caps)
+        R_x = R_end_caps(j);
+        for elem = 1:size(elementsInner, 1)
+            layer_k = squeeze(elementsInner(elem,:, :)); 
+            layer_k1 = squeeze(elementsInner(elem,:, :)); 
+            if j > 1
+                layer_k(:,1) = -R_prev;
             end
-            if tag == 3
-                boundaries(end+1, :) = [size(elements,1); 1; 4];
+            layer_k1(:,1) = -R_x;
+            element = [layer_k1; layer_k]; % 8 x 3
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            if j == 1
+                boundaries(end+1, :) = [size(elements,1); 6; 1];
+            end
+            if j == length(R_end_caps)
+                boundaries(end+1, :) = [size(elements,1); 5; 3];
             end
         end
+        for elem = 1:size(elementsOuter, 1)
+            layer_k = squeeze(elementsOuter(elem,:, :)); 
+            layer_k1 = squeeze(elementsOuter(elem,:, :)); 
+            if j > 1
+                layer_k(:,1) = -R_prev;
+            end
+            layer_k1(:,1) = -R_x;
+            element = [layer_k1; layer_k]; % 8 x 3
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            if j == length(R_end_caps)
+                boundaries(end+1, :) = [size(elements,1); 5; 3];
+            end
+
+            [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
+            if isBoundary
+                tag = sliceBoundaries(idx, 2);
+                if tag == 2 
+                    boundaries(end+1, :) = [size(elements,1); 1; 2];
+                end
+                if tag == 3
+                    boundaries(end+1, :) = [size(elements,1); 1; 4];
+                end
+            end
+        end
+        R_prev = R_x;
     end
 end
 
@@ -209,37 +226,53 @@ for i = 208:208
     [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, true);
     [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
-    for elem = 1:size(elementsInner, 1)
-        layer_k = squeeze(elementsInner(elem,:, :)); 
-        layer_k1 = squeeze(elementsInner(elem,:, :)); 
-        layer_k1(:,1) = R_x;
-        element = [layer_k; layer_k1]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 5; 1];
-        boundaries(end+1, :) = [size(elements,1); 6; 3];
-    end
-    for elem = 1:size(elementsOuter, 1)
-        layer_k = squeeze(elementsOuter(elem,:, :)); 
-        layer_k1 = squeeze(elementsOuter(elem,:, :)); 
-        layer_k1(:,1) = R_x;
-        element = [layer_k; layer_k1]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements,1); 6; 3];
-
-        [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-        if isBoundary
-            tag = sliceBoundaries(idx, 2);
-            if tag == 2 
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
+    for j = 1:length(R_end_caps)
+        R_x = R_end_caps(j);
+        for elem = 1:size(elementsInner, 1)
+            layer_k = squeeze(elementsInner(elem,:, :)); 
+            layer_k1 = squeeze(elementsInner(elem,:, :)); 
+            if j > 1
+                layer_k(:,1) = R_prev;
             end
-            if tag == 3
-                boundaries(end+1, :) = [size(elements,1); 1; 4];
+            layer_k1(:,1) = R_x;
+            element = [layer_k; layer_k1]; % 8 x 3
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            if j == 1
+                boundaries(end+1, :) = [size(elements,1); 5; 1];
+            end
+            if j == length(R_end_caps)
+                boundaries(end+1, :) = [size(elements,1); 6; 3];
             end
         end
+        for elem = 1:size(elementsOuter, 1)
+            layer_k = squeeze(elementsOuter(elem,:, :)); 
+            layer_k1 = squeeze(elementsOuter(elem,:, :)); 
+            if j > 1
+                layer_k(:,1) = R_prev;
+            end
+            layer_k1(:,1) = R_x;
+            element = [layer_k; layer_k1]; % 8 x 3
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            if j == length(R_end_caps)
+                boundaries(end+1, :) = [size(elements,1); 6; 3];
+            end
+
+            [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
+            if isBoundary
+                tag = sliceBoundaries(idx, 2);
+                if tag == 2 
+                    boundaries(end+1, :) = [size(elements,1); 1; 2];
+                end
+                if tag == 3
+                    boundaries(end+1, :) = [size(elements,1); 1; 4];
+                end
+            end
+        end
+        R_prev = R_x;
     end
 end
 
@@ -248,7 +281,7 @@ xs = squeeze(xs);
 xs = xs(:);
 half_pos = floor(size(xs,1)/2)+1;
 xs = xs(half_pos:end);
-xs(end+1) = R_x;
+xs = [xs; R_end_caps'];
 [cylElements, cylBoundaries] = wrapCylinder(xs);
 config
 zs = linspace(R_b, R_t, k_inner*2 + 1)(:);

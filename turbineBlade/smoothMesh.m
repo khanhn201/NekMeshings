@@ -1,29 +1,13 @@
 function [smoothedElements] = smoothMesh(elements, boundaries)
     sf = 0.99;
     boundary_elements = boundaries(:,1);
-    n_smooth = 20;
+    config;
     tol = 1e-6;
     n = size(elements, 1);
     X = reshape(elements, n*4, 3);
     [Xnew,ia,ic] = uniquetol(X,tol,'ByRows',true);
     Hexes = reshape(ic,n,4);
     X = Xnew;
-    % for i=1:n_smooth
-    %     for j=1:size(X,1)
-    %         [row_indices, ~] = find(Hexes == j);
-    %         element_indices = unique(row_indices);
-    %
-    %         is_boundary = ~isempty(intersect(element_indices, boundary_elements));
-    %         if ~is_boundary
-    %             neighbors_all = Hexes(element_indices, :)(:);
-    %             neighbors_indices = unique(neighbors_all);
-    %             neighbors_indices(neighbors_indices == j) = [];
-    %             neighbors_coords = X(neighbors_indices, :);
-    %             target_pos = mean(X, 1);
-    %             X(j, :) = (1-alpha)*X(j, :) + alpha*target_pos;
-    %         end
-    %     end
-    % end
     for i = 1:n_smooth
         X_new = X;
         for j = 1:size(X,1)
