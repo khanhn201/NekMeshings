@@ -11,6 +11,8 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
     s_fine2 = flip(s_fine)(1:end-1);
     s_fine = [s_fine1, s_fine2];
+    % s_fine = [linspace(0, arc_length_at_max_y, n_top+2*k_inner + 1)(1:end-1), ...
+    %       linspace(arc_length_at_max_y, arc_length, n_bottom+2*k_inner + 1)(1:end-1)];
 
 
     % if xmesh

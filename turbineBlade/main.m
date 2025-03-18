@@ -47,8 +47,9 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
     pp_coarse = spline(x, splinePoints');
     connectingSplines{i} = pp_coarse;
 end
-% plotSplines
+plotSplines
 
+asdasfdas(asdas)
 % Connect slices
 elements = [];
 boundaries = [];

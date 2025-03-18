@@ -3,7 +3,7 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
     nx=2*n_top + 4*k_inner;
     ny=k_outer;
     maxit=100000;
-    Ermax=10^-7;
+    Ermax=10^-9;
 
     point_at_min = ppval(pp, 0);
     x = point_at_min(1);
@@ -15,6 +15,8 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
     s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
     s_fine2 = flip(s_fine)(1:end-1);
     s_fine = [s_fine1, s_fine2];
+    % s_fine = [linspace(0, arc_length_at_max_y, n_top+2*k_inner + 1)(1:end-1), ...
+    %       linspace(arc_length_at_max_y, arc_length, n_bottom+2*k_inner + 1)(1:end-1)];
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
     end
@@ -28,6 +30,10 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
         s_fine1 = [s_fine'; arc_length];
         all_points1 = [all_points; all_points(1,:)];
     end
+    all_points1 = [
+        (all_points1(2,:)-all_points1(1,:))/(s_fine1(2)-s_fine1(1)); 
+        all_points1; 
+        (all_points1(end,:)-all_points1(end-1,:))/(s_fine1(end)-s_fine1(end-1));];
     pp_coarse = spline(s_fine1, all_points1');
 
 
@@ -162,21 +168,25 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
         newX(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
             2*beta(i,j).*(X(ip,j+1)-X(im,j+1)-X(ip,j-1) + X(im,j-1))/4 ...
             -alpha(i,j).*(X(ip,j)+X(im,j))-gamma(i,j).*(X(i,j+1)+X(i,j-1))...
-            + weight(i,j).*x_xi 
+            +0
+            % + weight(i,j).*x_xi 
         );
         newY(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
             2*beta(i,j).*(Y(ip,j+1)-Y(im,j+1)-Y(ip,j-1) + Y(im,j-1))/4 ...
             -alpha(i,j).*(Y(ip,j)+Y(im,j))-gamma(i,j).*(Y(i,j+1)+Y(i,j-1))...
-            + weight(i,j).*y_xi 
+            + 0
+            % + weight(i,j).*y_xi 
         );
-        vec1 = ([newX(1,2); newY(1,2)]'-all_points(1, 2:3));
-        projected1 = dot(vec1,bisector1(2:3))*bisector1(2:3)/norm(bisector1(2:3));
-        newX(1,2) = (all_points(1, 2)+projected1(1));
-        newY(1,2) = (all_points(1, 3)+projected1(2));
-        vec2 = ([newX(n_top+2*k_inner+1,2);newY(n_top+2*k_inner+1,2)]'-all_points(n_top+2*k_inner+1, 2:3));
-        projected2 = dot(vec2,bisector2(2:3))*bisector2(2:3)/norm(bisector2(2:3));
-        newX(n_top+2*k_inner+1,2) = (all_points(n_top+2*k_inner+1, 2)+projected2(1));
-        newY(n_top+2*k_inner+1,2) = (all_points(n_top+2*k_inner+1, 3)+projected2(2));
+        for l = 2:3
+            vec1 = ([newX(1,l); newY(1,l)]'-all_points(1, 2:3));
+            projected1 = dot(vec1,bisector1(2:3))*bisector1(2:3)/norm(bisector1(2:3));
+            newX(1,l) = (all_points(1, 2)+projected1(1));
+            newY(1,l) = (all_points(1, 3)+projected1(2));
+            vec2 = ([newX(n_top+2*k_inner+1,l);newY(n_top+2*k_inner+1,l)]'-all_points(n_top+2*k_inner+1, 2:3));
+            projected2 = dot(vec2,bisector2(2:3))*bisector2(2:3)/norm(bisector2(2:3));
+            newX(n_top+2*k_inner+1,l) = (all_points(n_top+2*k_inner+1, 2)+projected2(1));
+            newY(n_top+2*k_inner+1,l) = (all_points(n_top+2*k_inner+1, 3)+projected2(2));
+        end
         Er1(1,t)=max(max(abs(newX-X)));
         Er2(1,t)=max(max(abs(newY-Y)));
         X=newX;
@@ -220,10 +230,10 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
             boundaries(end+1, :) = [size(elements, 1); 1;];
         end
         if j == ny
-            if i > k_inner + 1 && i < k_inner + n_top + 2
+            if i > k_inner && i < k_inner + n_top + 1
                 boundaries(end+1, :) = [size(elements, 1); 2;];
             end
-            if i > 3*k_inner + n_top + 1&& i < 3*k_inner + 2*n_top + 2
+            if i > 3*k_inner + n_top && i < 3*k_inner + 2*n_top + 1
                 boundaries(end+1, :) = [size(elements, 1); 3;];
             end
         end
