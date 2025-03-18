@@ -75,7 +75,8 @@ function plotElements3D(elements)
   y_lines = [];
   z_lines = [];
   
-  for i = 1:size(elements, 1)
+  % for i = 1:size(elements, 1)
+  for i = [2817, 2156]
       lower_face = squeeze(elements(i, 1:4, :));
       upper_face = squeeze(elements(i, 5:8, :));
       

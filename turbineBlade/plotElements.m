@@ -18,6 +18,12 @@ function plotElements(elements, boundaries)
         %     plot(y, z, 'k-', 'LineWidth', 0.5);
         % end
         plot(y, z, 'k-', 'LineWidth', 0.5);
+        
+        centroid_y = mean(y(1:end-1));  % exclude the repeated first point
+        centroid_z = mean(z(1:end-1));
+        
+        % Plot element number
+        text(centroid_y, centroid_z, num2str(k), 'FontSize', 8, 'Color', 'b');
 
     end
     axis equal;

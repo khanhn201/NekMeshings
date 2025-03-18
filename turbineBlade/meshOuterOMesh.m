@@ -1,9 +1,15 @@
 function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped)
     config
 
-
-    s_fine = [linspace(0, arc_length_at_max_y, n_top + 2*k_inner +1)(1:end-1), ...
-          linspace(arc_length_at_max_y, arc_length, n_bottom + 2*k_inner + 1)(1:end-1)];
+    N_total = n_top + 2*k_inner+1;
+    i = 0:(N_total-1);
+    cheb_nodes = cos(i*pi / (N_total-1));
+    cheb_nodes_mapped = (cheb_nodes + 1) / 2;
+    s_fine = cheb_nodes_mapped * arc_length_at_max_y;
+    s_fine1 = flip(s_fine)(1:end-1);
+    s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
+    s_fine2 = flip(s_fine)(1:end-1);
+    s_fine = [s_fine1, s_fine2];
 
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
@@ -35,7 +41,7 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
     pp_coarse = spline(s_fine1, all_points1');
 
     layer_prev = all_points;
-    for k = 1:3
+    for k = 1:2
         layer_next = [];
         for t = 1:length(all_points)
             p1 = all_points(t, :);
@@ -83,7 +89,8 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
         s_angle = min((k-1)/(k_outer-1),1);
-        s_angle = (1-e^(-s*4));
+        s_angle = (1-e^(-s*3));
+        % s_angle = s;
         if k == 1
             s_angle = 0;
         end
@@ -117,7 +124,8 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
         s_angle = min((k-1)/(k_outer-1),1);
-        s_angle = (1-e^(-s*4));
+        s_angle = (1-e^(-s*3));
+        % s_angle = s;
         if k == 1
             s_angle = 0;
         end
@@ -151,7 +159,8 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
         s_angle = min((k-1)/(k_outer-1),1);
-        s_angle = (1-e^(-s*4));
+        s_angle = (1-e^(-s*3));
+        % s_angle = s;
         if k == 1
             s_angle = 0;
         end
@@ -190,7 +199,8 @@ function [elements,boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_l
         layer_next = [];
         s = (mult^k-mult)/(mult^(k_outer+1)-mult);
         s_angle = min((k-1)/(k_outer-1),1);
-        s_angle = (1-e^(-s*4));
+        s_angle = (1-e^(-s*3));
+        % s_angle = s;
         if k == 1
             s_angle = 0;
         end

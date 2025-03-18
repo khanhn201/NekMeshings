@@ -1,3 +1,4 @@
+
 rmdir('./surfaces/', 's')
 mkdir('./surfaces/')
 
@@ -17,8 +18,8 @@ for i = 0:slice_spacing:208
         flipped = true;
     end
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
-    [elements, boundaries, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped);
-    [elements] = smoothMesh(elements, boundaries);
+    [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, flipped);
+    % [elements] = smoothMesh(elements, boundaries);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
     xs(end+1) = x;
@@ -42,6 +43,7 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
         end
         x(end+1) = splinePoints(end, 1);
     end
+    splinePoints = [[1;0;0]';splinePoints;[1;0;0]'];
     pp_coarse = spline(x, splinePoints');
     connectingSplines{i} = pp_coarse;
 end
@@ -108,43 +110,6 @@ for k = 1:(numSlices - 1)
 
                 % Close the file
                 fclose(fid);
-
-                % nPoints = 100;
-                %
-                % figure; hold on; grid on;
-                % xlabel('X'); ylabel('Y'); zlabel('Z');
-                % title('3D Spline Segments');
-                % view(3);
-                %
-                % t1 = linspace(spline1start, spline1end, nPoints);
-                % x1 = polyval(spline1piece(1, :), t1 - spline1start);
-                % y1 = polyval(spline1piece(2, :), t1 - spline1start);
-                % z1 = polyval(spline1piece(3, :), t1 - spline1start);
-                % plot3(x1, y1, z1, 'r', 'LineWidth', 2);
-                % t3 = linspace(spline3start, spline3end, nPoints);
-                % x3 = polyval(spline3piece(1, :), t3 - spline3start);
-                % y3 = polyval(spline3piece(2, :), t3 - spline3start);
-                % z3 = polyval(spline3piece(3, :), t3 - spline3start);
-                % plot3(x3, y3, z3, 'b', 'LineWidth', 2);
-                % t2 = linspace(spline2start, spline2end, nPoints);
-                % x2 = polyval(spline2piece(1, :), t2 - spline2start);
-                % y2 = polyval(spline2piece(2, :), t2 - spline2start);
-                % z2 = polyval(spline2piece(3, :), t2 - spline2start);
-                % plot3(x2, y2, z2, 'g', 'LineWidth', 2);
-                % t4 = linspace(spline4start, spline4end, nPoints);
-                % x4 = polyval(spline4piece(1, :), t4 - spline4start);
-                % y4 = polyval(spline4piece(2, :), t4 - spline4start);
-                % z4 = polyval(spline4piece(3, :), t4 - spline4start);
-                % plot3(x4, y4, z4, 'k', 'LineWidth', 2);
-                %
-                % legend('Spline 1', 'Spline 3', 'Spline 2', 'Spline 4');
-                % xlabel('Parameter t');
-                % ylabel('Value');
-                % title('Plot of 4 Spline Segments');
-                % grid on;
-                % hold off;
-                % axis equal;
-                % pause;
             end
             if tag == 2 
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
@@ -166,8 +131,8 @@ for i = 0:0
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
-    [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, false);
-    [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
+    [elementsOuter, boundariesOuter] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, false);
+    % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
@@ -223,8 +188,8 @@ for i = 208:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
-    [elementsOuter, boundariesOuter] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, true);
-    [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
+    [elementsOuter, boundariesOuter] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, true);
+    % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
@@ -345,4 +310,4 @@ size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-plotBC(elements, boundaries)
+% plotBC(elements, boundaries)

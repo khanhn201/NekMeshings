@@ -21,6 +21,7 @@ function [pp, arc_length, arc_length_at_max_y]= fitSpline(slice, flipped);
     else
         y = [slice; slice(1, :)];
     end
+    y = [[0;0;0]';y;[0;0;0]'];
     pp = spline(x, y');
     % pp = splinefit(x, y', x, "periodic", true);
 end
