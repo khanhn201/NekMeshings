@@ -48,6 +48,7 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     elements = [];
     boundaries = [];
 
+    % Left tip
     p14 = findBisectNode(point_at_min', points_top(2, :), points_bottom(end-1, :));
     element = [];
     element(1,:) = point_at_min';
@@ -67,12 +68,26 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     element(3,:) = p14;
     element(4,:) = (points_top(2, :)+p14)/2;
     elements(end+1, :, :) = element;
+
+    % Right tip
     p24 = findBisectNode(point_at_max', points_top(end-1, :), points_bottom(2, :));
     element = [];
     element(1,:) = point_at_max';
     element(2,:) = points_top(end-1, :);
-    element(3,:) = p24;
+    element(3,:) = (points_top(end-1, :)+p24)/2;
+    element(4,:) = (point_at_max' + p24)/2;
+    elements(end+1, :, :) = element;
+    element = [];
+    element(1,:) = point_at_max';
+    element(2,:) = (point_at_max' + p24)/2;
+    element(3,:) = (points_bottom(2, :)+p24)/2;
     element(4,:) = points_bottom(2, :);
+    elements(end+1, :, :) = element;
+    element = [];
+    element(1,:) = (point_at_max' + p24)/2;
+    element(2,:) = (points_top(end-1, :) + p24)/2;
+    element(3,:) = p24;
+    element(4,:) = (points_bottom(2, :)+p24)/2;
     elements(end+1, :, :) = element;
 
     for i = 2:n-1

@@ -17,4 +17,4 @@ n_smooth = 100;
 R_a = 800; % Bounding rect length in y (y from -R_a to R_a)
 R_t = 600; % Bounding rect top
 R_b = -600; % Bounding rect bottom (z from R_b to R_t)
-R_end_caps = [5125, 5250, 5375, 5500]; % End cap position (-R_x and R_x)
+R_end_caps = [5125, 5250, 5500]; % End cap position (-R_x and R_x)
