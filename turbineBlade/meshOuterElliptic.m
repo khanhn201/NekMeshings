@@ -78,68 +78,6 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
     p3 = all_points(n_top+2*k_inner+2, :);
     bisector2 = findBisect(p1, p2, p3);
     panchor2 = p1 + bisector2;
-    % for t=1:1000;
-    %     i = 2:nx-1;
-    %     j = 2:ny-1;
-    %
-    %     im = i - 1;
-    %     ip = i + 1;
-    %
-    %     im(im < 1) = nx;
-    %     ip(ip > nx) = 1;
-    %
-    %     x_eta = (X(i,j+1)-X(i,j-1))/2;
-    %     x_xi = (X(ip,j)-X(im,j))/2;
-    %     x_xixi = X(ip,j)+X(im,j)-2*X(i,j);
-    %     x_etaeta = X(i,j+1)+X(i,j-1)-2*X(i,j);
-    %     y_eta = (Y(i,j+1)-Y(i,j-1))/2;
-    %     y_xi = (Y(ip,j)-Y(im,j))/2;
-    %     y_xixi = Y(ip,j)+Y(im,j)-2*Y(i,j);
-    %     y_etaeta = Y(i,j+1)+Y(i,j-1)-2*Y(i,j);
-    %
-    %     alpha(i,j)=x_eta.^2 + y_eta.^2;
-    %     beta(i,j)=x_xi.*x_eta + y_xi.*y_eta;
-    %     gamma(i,j)=x_xi.^2 + y_xi.^2;
-    %     newX(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
-    %         2*beta(i,j).*(X(ip,j+1)-X(im,j+1)-X(ip,j-1) + X(im,j-1))/4 ...
-    %         -alpha(i,j).*(X(ip,j)+X(im,j))-gamma(i,j).*(X(i,j+1)+X(i,j-1))...
-    %         + weight(i,j).*x_xi + 1.*x_eta 
-    %     );
-    %     newY(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
-    %         2*beta(i,j).*(Y(ip,j+1)-Y(im,j+1)-Y(ip,j-1) + Y(im,j-1))/4 ...
-    %         -alpha(i,j).*(Y(ip,j)+Y(im,j))-gamma(i,j).*(Y(i,j+1)+Y(i,j-1))...
-    %         + weight(i,j).*y_xi + 1.*y_eta
-    %     );
-    %     vec1 = ([newX(1,2); newY(1,2)]'-all_points(1, 2:3));
-    %     projected1 = dot(vec1,bisector1(2:3))*bisector1(2:3)/norm(bisector1(2:3));
-    %     newX(1,2) = (all_points(1, 2)+projected1(1));
-    %     newY(1,2) = (all_points(1, 3)+projected1(2));
-    %     vec2 = ([newX(n_top+2*k_inner+1,2);newY(n_top+2*k_inner+1,2)]'-all_points(n_top+2*k_inner+1, 2:3));
-    %     projected2 = dot(vec2,bisector2(2:3))*bisector2(2:3)/norm(bisector2(2:3));
-    %     newX(n_top+2*k_inner+1,2) = (all_points(n_top+2*k_inner+1, 2)+projected2(1));
-    %     newY(n_top+2*k_inner+1,2) = (all_points(n_top+2*k_inner+1, 3)+projected2(2));
-    %
-    %     Er1(1,t)=max(max(abs(newX-X)));
-    %     Er2(1,t)=max(max(abs(newY-Y)));
-    %     X=newX;
-    %     Y=newY;
-    %     % min(Er1(t),Er2(t))
-    %     if Er1(t)<Ermax &&Er2(t)<Ermax
-    %       break
-    %     end
-    %      if ceil(t/10)*10==t
-    %         clf 
-    %         hold on
-    %         axis equal
-    %         for m=1:nx
-    %         plot(X(m,:),Y(m,:),'b');
-    %         end
-    %         for m=1:ny
-    %         plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-    %         end
-    %         pause(0.001)
-    %       end
-    % end
 
 
     for t=1:maxit
@@ -237,30 +175,8 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
                 boundaries(end+1, :) = [size(elements, 1); 3;];
             end
         end
-         % if ceil(t/10)*10==t
-         %    clf 
-         %    hold on
-         %    axis equal
-         %    for m=1:nx
-         %    plot(X(m,:),Y(m,:),'b');
-         %    end
-         %    for m=1:ny
-         %    plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-         %    end
-         %    pause(0.001)
-         %  end
     end
     end
-
-    % hold on
-    % axis equal
-    % for m=1:nx
-    %     plot(X(m,:),Y(m,:),'b');
-    % end
-    % for m=1:ny
-    %     plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-    % end
-    % hold off
     checkCounterClockwise(elements)
 end
 

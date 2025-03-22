@@ -17,7 +17,7 @@ function plotBC(elements, boundaries)
       0.2, 0.8, 0.2;  % Tag 2: Inflow (Green)
       0.2, 0.2, 0.8;  % Tag 3: Outflow (Blue)
       0.8, 0.2, 0.8;  % Tag 4: Internal (Purple)
-      0.8, 0.2, 0.8   % Tag 4: Internal (Purple)
+      0.5, 0.5, 0.5   % Tag 4: Internal (Purple)
   ];
   % Plot bc_wall
   for i = 1:size(boundaries, 1)

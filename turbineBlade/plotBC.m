@@ -17,7 +17,18 @@ function plotBC(elements, boundaries)
       0.2, 0.8, 0.2;  % Tag 2: Inflow (Green)
       0.2, 0.2, 0.8;  % Tag 3: Outflow (Blue)
       0.8, 0.2, 0.8   % Tag 4: Internal (Purple)
+      0.5, 0.5, 0.5   % Tag 4: Internal (Purple)
   ];
+  % for elem = [44553, 44757]
+  %     for face = 1:6
+  %         coordinates = elements(elem, face_node_map(face, :), :);
+  %         x = coordinates(:,:, 1);
+  %         y = coordinates(:,:, 2);
+  %         z = coordinates(:,:, 3);
+  %         color = color_matrix(5, :);
+  %         fill3(x, y, z, color, 'FaceAlpha', 0.5, 'EdgeColor', 'black'); % Plot faces with transparency
+  %     end
+  % end
   % Plot bc_wall
   for i = 1:size(boundaries, 1)
       elem = boundaries(i, 1);

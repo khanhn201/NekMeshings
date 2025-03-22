@@ -25,12 +25,12 @@ print("Slicing surface along x axis")
 slice_count = 208
 # slice_count = 32
 slice_positions = np.concatenate([
-    np.linspace(-5000, -1250, slice_count//4, endpoint=False),
-    np.linspace(-1250, -500, (slice_count//16)*3, endpoint=False),
-    np.linspace(-500, 0, slice_count//16, endpoint=False),
-    np.linspace(0, 500, slice_count//16, endpoint=False),
-    np.linspace(500, 1250, (slice_count//16)*3, endpoint=False),
-    np.linspace(1250, 5000, slice_count//4+1)
+    np.linspace(-5000, -1500, slice_count//4, endpoint=False),
+    np.linspace(-1500, -400, (slice_count//16)*3, endpoint=False),
+    np.linspace(-400, 0, slice_count//16, endpoint=False),
+    np.linspace(0, 400, slice_count//16, endpoint=False),
+    np.linspace(400, 1500, (slice_count//16)*3, endpoint=False),
+    np.linspace(1500, 5000, slice_count//4+1)
 ])
 
 slices = slice_surface(elements, slice_positions)
@@ -56,67 +56,67 @@ print("done exporting")
 # np.save("extruded_volume.npy", extruded_volume)
 
 
-def check_lefthand(element):
-    corner_list = [
-        [0, 1, 3, 4],
-        [1, 2, 0, 5],
-        [2, 3, 1, 6],
-        [3, 0, 2, 7],
-        [4, 7, 5, 0],
-        [5, 4, 6, 1],
-        [6, 5, 7, 2],
-        [7, 6, 4, 3]
-    ]
-    for face in corner_list:
-        node1, node2, node4, node5 = element[face[0]], element[face[1]], element[face[2]], element[face[3]]
-        vec12 = node2 - node1
-        vec14 = node4 - node1
-        vec15 = node5 - node1
-        cross_vec = np.cross(vec12, vec14)
-        dot_prod = np.dot(cross_vec, vec15)
-        if dot_prod <= 0:
-            print('Left-handed/ill-shaped element detected!')
-            return False
-
-
-
-extruded_volume = np.load("extruded_volume.npy")
-print(extruded_volume.shape)
-# print(extruded_volume)
-elements = []
-boundaries = []
-count_elements = 0
-for i in range(extruded_volume.shape[0]-1):
-    for j in range(extruded_volume.shape[1]-1):
-        for k in range(extruded_volume.shape[2]):
-            k_next = k + 1
-            if k == extruded_volume.shape[2]-1:
-                k_next = 0
-            node1 = extruded_volume[i, j, k]
-            node2 = extruded_volume[i, j, k_next]
-            node3 = extruded_volume[i, j+1, k_next]
-            node4 = extruded_volume[i, j+1, k]
-            node5 = extruded_volume[i+1, j, k]
-            node6 = extruded_volume[i+1, j, k_next]
-            node7 = extruded_volume[i+1, j+1, k_next]
-            node8 = extruded_volume[i+1, j+1, k]
-            element = np.array([
-                node1, node2, node3, node4, node5, node6, node7, node8
-            ])
-            check_lefthand(element)
-            elements.append(element)
-            if j == 0:
-                boundaries.append((count_elements, 1-1, 1)) # Wall
-            if i == 0:
-                boundaries.append((count_elements, 5-1, 4)) # Outflow
-            if i == extruded_volume.shape[0] - 2:
-                boundaries.append((count_elements, 6-1, 4))
-            if j == extruded_volume.shape[1] - 2:
-                boundaries.append((count_elements, 3-1, 4))
-            count_elements += 1
-elements = np.array(elements)
-
-plot_hex_elements(elements, boundaries, 1) # Outflow
-plot_hex_elements(elements, boundaries, 4) # Wall
-export_rea('turb_hyp.rea', elements, boundaries)
-
+# def check_lefthand(element):
+#     corner_list = [
+#         [0, 1, 3, 4],
+#         [1, 2, 0, 5],
+#         [2, 3, 1, 6],
+#         [3, 0, 2, 7],
+#         [4, 7, 5, 0],
+#         [5, 4, 6, 1],
+#         [6, 5, 7, 2],
+#         [7, 6, 4, 3]
+#     ]
+#     for face in corner_list:
+#         node1, node2, node4, node5 = element[face[0]], element[face[1]], element[face[2]], element[face[3]]
+#         vec12 = node2 - node1
+#         vec14 = node4 - node1
+#         vec15 = node5 - node1
+#         cross_vec = np.cross(vec12, vec14)
+#         dot_prod = np.dot(cross_vec, vec15)
+#         if dot_prod <= 0:
+#             print('Left-handed/ill-shaped element detected!')
+#             return False
+#
+#
+#
+# extruded_volume = np.load("extruded_volume.npy")
+# print(extruded_volume.shape)
+# # print(extruded_volume)
+# elements = []
+# boundaries = []
+# count_elements = 0
+# for i in range(extruded_volume.shape[0]-1):
+#     for j in range(extruded_volume.shape[1]-1):
+#         for k in range(extruded_volume.shape[2]):
+#             k_next = k + 1
+#             if k == extruded_volume.shape[2]-1:
+#                 k_next = 0
+#             node1 = extruded_volume[i, j, k]
+#             node2 = extruded_volume[i, j, k_next]
+#             node3 = extruded_volume[i, j+1, k_next]
+#             node4 = extruded_volume[i, j+1, k]
+#             node5 = extruded_volume[i+1, j, k]
+#             node6 = extruded_volume[i+1, j, k_next]
+#             node7 = extruded_volume[i+1, j+1, k_next]
+#             node8 = extruded_volume[i+1, j+1, k]
+#             element = np.array([
+#                 node1, node2, node3, node4, node5, node6, node7, node8
+#             ])
+#             check_lefthand(element)
+#             elements.append(element)
+#             if j == 0:
+#                 boundaries.append((count_elements, 1-1, 1)) # Wall
+#             if i == 0:
+#                 boundaries.append((count_elements, 5-1, 4)) # Outflow
+#             if i == extruded_volume.shape[0] - 2:
+#                 boundaries.append((count_elements, 6-1, 4))
+#             if j == extruded_volume.shape[1] - 2:
+#                 boundaries.append((count_elements, 3-1, 4))
+#             count_elements += 1
+# elements = np.array(elements)
+#
+# plot_hex_elements(elements, boundaries, 1) # Outflow
+# plot_hex_elements(elements, boundaries, 4) # Wall
+# export_rea('turb_hyp.rea', elements, boundaries)
+#

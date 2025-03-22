@@ -11,8 +11,8 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
     s_fine2 = flip(s_fine)(1:end-1);
     s_fine = [s_fine1, s_fine2];
-    % s_fine = [linspace(0, arc_length_at_max_y, n_top+2*k_inner + 1)(1:end-1), ...
-    %       linspace(arc_length_at_max_y, arc_length, n_bottom+2*k_inner + 1)(1:end-1)];
+    s_fine = [linspace(0, arc_length_at_max_y, n_top+2*k_inner + 1)(1:end-1), ...
+          linspace(arc_length_at_max_y, arc_length, n_bottom+2*k_inner + 1)(1:end-1)];
 
 
     % if xmesh
@@ -21,6 +21,17 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     %     points_top = ppval(pp, s_fine(1:n_top+1))';
     %     points_bottom = [ppval(pp, s_fine(n_top + 1:end))'; points_top(1,:)];
     %     n = n_top;
+
+    % nx=2*n_top + 4*k_inner + 4;
+    % i = 0:nx/2;
+    % cheb_nodes = cos(i*pi / (nx/2));
+    % cheb_nodes_mapped = (cheb_nodes + 1) / 2;
+    % s_fine = cheb_nodes_mapped * arc_length_at_max_y;
+    % s_fine1 = flip(s_fine)(1:end-1);
+    % s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
+    % s_fine2 = flip(s_fine)(1:end-1);
+    % s_fine = [s_fine1(1), s_fine1(3:end-1),...
+    %           s_fine2(1), s_fine2(3:end-1)];
 
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
@@ -41,10 +52,21 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     element = [];
     element(1,:) = point_at_min';
     element(2,:) = points_bottom(end-1, :);
-    element(3,:) = p14;
+    element(3,:) = (points_bottom(end-1, :)+p14)/2;
+    element(4,:) = (point_at_min' + p14)/2;
+    elements(end+1, :, :) = element;
+    element = [];
+    element(1,:) = point_at_min';
+    element(2,:) = (point_at_min' + p14)/2;
+    element(3,:) = (points_top(2, :)+p14)/2;
     element(4,:) = points_top(2, :);
     elements(end+1, :, :) = element;
-    boundaries(end+1, :) = [size(elements, 1); 10;];
+    element = [];
+    element(1,:) = (point_at_min' + p14)/2;
+    element(2,:) = (points_bottom(end-1, :) + p14)/2;
+    element(3,:) = p14;
+    element(4,:) = (points_top(2, :)+p14)/2;
+    elements(end+1, :, :) = element;
     p24 = findBisectNode(point_at_max', points_top(end-1, :), points_bottom(2, :));
     element = [];
     element(1,:) = point_at_max';
@@ -52,50 +74,80 @@ function [elements,boundaries] = meshInner(pp, arc_length, arc_length_at_max_y, 
     element(3,:) = p24;
     element(4,:) = points_bottom(2, :);
     elements(end+1, :, :) = element;
-    boundaries(end+1, :) = [size(elements, 1); 10;];
-
-    % for i = 2:n-1
-    %     element = [];
-    %     element(1,:) = points_top(i+1, :);
-    %     element(2,:) = points_top(i,:);
-    %     element(3,:) = (i-2)/(n-2)*p24 + (n-i)/(n-2)*p14;
-    %     element(4,:) = (i-1)/(n-2)*p24 + (n-i-1)/(n-2)*p14;
-    %     elements(end+1, :, :) = element;
-    %     boundaries(end+1, :) = [size(elements, 1); 10;];
-    %     element = [];
-    %     element(1,:) = points_bottom(i+1, :);
-    %     element(2,:) = points_bottom(i,:);
-    %     element(3,:) = (i-2)/(n-2)*p14 + (n-i)/(n-2)*p24;
-    %     element(4,:) = (i-1)/(n-2)*p14 + (n-i-1)/(n-2)*p24;
-    %     elements(end+1, :, :) = element;
-    %     boundaries(end+1, :) = [size(elements, 1); 10;];
-    % end
-    interp_top = zeros(n-1, 3);
-    interp_top(1,:) = p14;
-    interp_top(n-1,:) = p24;
-    for i = 2:n-2
-        interp_top(i,:) = (points_top(i+1, :) + points_bottom(length(points_bottom)-i, :))/2;         % For top element points
-    end
-    interp_bottom = flip(interp_top);
 
     for i = 2:n-1
-        % Top element
-        element = zeros(4,3);
-        element(1,:) = points_top(i+1, :);
-        element(2,:) = points_top(i, :);
-        element(3,:) = interp_top(i-1, :);    % Corresponds to (i-2)/(n-2)
-        element(4,:) = interp_top(i, :);      % Corresponds to (i-1)/(n-2)
+        p1 = points_top(i+1, :);
+        p2 = points_top(i,:);
+        p3 = (i-2)/(n-2)*p24 + (n-i)/(n-2)*p14;
+        p4 = (i-1)/(n-2)*p24 + (n-i-1)/(n-2)*p14;
+        element = [];
+        element(1,:) = p1;
+        element(2,:) = p2;
+        element(3,:) = (p2 + p3)/2;
+        element(4,:) = (p1 + p4)/2;
         elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements, 1); 10];
+        element = [];
+        element(1,:) = (p1 + p4)/2;
+        element(2,:) = (p2 + p3)/2;
+        element(3,:) = p3;
+        element(4,:) = p4;
+        elements(end+1, :, :) = element;
 
-        % Bottom element
-        element(1,:) = points_bottom(i+1, :);
-        element(2,:) = points_bottom(i, :);
-        element(3,:) = interp_bottom(i-1, :);   % Corresponds to (i-2)/(n-2)
-        element(4,:) = interp_bottom(i, :);     % Corresponds to (i-1)/(n-2)
+        p1 = points_bottom(i+1, :);
+        p2 = points_bottom(i,:);
+        p3 = (i-2)/(n-2)*p14 + (n-i)/(n-2)*p24;
+        p4 = (i-1)/(n-2)*p14 + (n-i-1)/(n-2)*p24;
+        element = [];
+        element(1,:) = p1;
+        element(2,:) = p2;
+        element(3,:) = (p2 + p3)/2;
+        element(4,:) = (p1 + p4)/2;
         elements(end+1, :, :) = element;
-        boundaries(end+1, :) = [size(elements, 1); 10];
+        element = [];
+        element(1,:) = (p1 + p4)/2;
+        element(2,:) = (p2 + p3)/2;
+        element(3,:) = p3;
+        element(4,:) = p4;
+        elements(end+1, :, :) = element;
+        % element = [];
+        % element(1,:) = points_bottom(i+1, :);
+        % element(2,:) = points_bottom(i,:);
+        % element(3,:) = (i-2)/(n-2)*p14 + (n-i)/(n-2)*p24;
+        % element(4,:) = (i-1)/(n-2)*p14 + (n-i-1)/(n-2)*p24;
+        % elements(end+1, :, :) = element;
+        % element = [];
+        % element(1,:) = points_bottom(i+1, :);
+        % element(2,:) = points_bottom(i,:);
+        % element(3,:) = (i-2)/(n-2)*p14 + (n-i)/(n-2)*p24;
+        % element(4,:) = (i-1)/(n-2)*p14 + (n-i-1)/(n-2)*p24;
+        % elements(end+1, :, :) = element;
     end
+    % interp_top = zeros(n-1, 3);
+    % interp_top(1,:) = p14;
+    % interp_top(n-1,:) = p24;
+    % for i = 2:n-2
+    %     interp_top(i,:) = (points_top(i+1, :) + points_bottom(length(points_bottom)-i, :))/2;         % For top element points
+    % end
+    % interp_bottom = flip(interp_top);
+
+    % for i = 2:n-1
+    %     % Top element
+    %     element = zeros(4,3);
+    %     element(1,:) = points_top(i+1, :);
+    %     element(2,:) = points_top(i, :);
+    %     element(3,:) = interp_top(i-1, :);    % Corresponds to (i-2)/(n-2)
+    %     element(4,:) = interp_top(i, :);      % Corresponds to (i-1)/(n-2)
+    %     elements(end+1, :, :) = element;
+    %     boundaries(end+1, :) = [size(elements, 1); 10];
+    %
+    %     % Bottom element
+    %     element(1,:) = points_bottom(i+1, :);
+    %     element(2,:) = points_bottom(i, :);
+    %     element(3,:) = interp_bottom(i-1, :);   % Corresponds to (i-2)/(n-2)
+    %     element(4,:) = interp_bottom(i, :);     % Corresponds to (i-1)/(n-2)
+    %     elements(end+1, :, :) = element;
+    %     boundaries(end+1, :) = [size(elements, 1); 10];
+    % end
     checkCounterClockwise(elements)
 end
 

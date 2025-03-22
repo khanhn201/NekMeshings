@@ -8,6 +8,24 @@ xs = [];
 sliceElements = [];
 sliceBoundaries = [];
 sliceSplines = {};
+for i = 0:0
+    filename = sprintf('slices/slice%04d.txt', i);
+    slice = readSliceFile(filename);
+    for j = length(R_end_caps):-1:1
+        R_x = -R_end_caps(j);
+        slice(:,1) = R_x;
+        flipped = false;
+        if R_x > 0
+            flipped = true;
+        end
+        [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
+        [elements, boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_length, arc_length_at_max_y, flipped);
+        sliceElements(end+1, :, :, :) = elements;
+        sliceBoundaries = boundaries;
+        xs(end+1) = R_x;
+        sliceSplines{size(sliceElements,1)} = pp_coarse;
+    end
+end
 for i = 0:slice_spacing:208
     i
     filename = sprintf('slices/slice%04d.txt', i);
@@ -18,13 +36,32 @@ for i = 0:slice_spacing:208
         flipped = true;
     end
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
-    [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, flipped);
+    [elements, boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_length, arc_length_at_max_y, flipped);
     % [elements] = smoothMesh(elements, boundaries);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
     xs(end+1) = x;
     sliceSplines{size(sliceElements,1)} = pp_coarse;
 end
+for i = 208:208
+    filename = sprintf('slices/slice%04d.txt', i);
+    slice = readSliceFile(filename);
+    for j = 1:length(R_end_caps)
+        R_x = R_end_caps(j);
+        slice(:,1) = R_x;
+        flipped = false;
+        if R_x > 0
+            flipped = true;
+        end
+        [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, flipped);
+        [elements, boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_length, arc_length_at_max_y, flipped);
+        sliceElements(end+1, :, :, :) = elements;
+        sliceBoundaries = boundaries;
+        xs(end+1) = R_x;
+        sliceSplines{size(sliceElements,1)} = pp_coarse;
+    end
+end
+
 if ~ismember(0, xs) || norm(xs + flip(xs)) > 1e-6
     disp('Error: slices do not contain x=0 or not symmetric around x=0')
 end
@@ -47,10 +84,11 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
     pp_coarse = spline(x, splinePoints');
     connectingSplines{i} = pp_coarse;
 end
-plotSplines
+% plotSplines
+% asdasfdas(asdas)
 
-asdasfdas(asdas)
 % Connect slices
+disp("connect slices")
 elements = [];
 boundaries = [];
 [numSlices, numElements, numVertices, dim] = size(sliceElements);
@@ -69,7 +107,11 @@ for k = 1:(numSlices - 1)
         if isBoundary
             tag = sliceBoundaries(idx, 2);
             if tag == 1
-                boundaries(end+1, :) = [size(elements,1); 3; 1];
+                if (k > length(R_end_caps)) && (k < (numSlices - length(R_end_caps)))
+                    boundaries(end+1, :) = [size(elements,1); 3; 1];
+                else
+                    boundaries(end+1, :) = [size(elements,1); 3; 5];
+                end
                 count_wall = count_wall + 1;
                 spline2 = connectingSplines{count_wall+1};
                 spline4 = connectingSplines{count_wall};
@@ -108,8 +150,6 @@ for k = 1:(numSlices - 1)
                 fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
                 fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
                 fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
-
-                % Close the file
                 fclose(fid);
             end
             if tag == 2 
@@ -119,21 +159,22 @@ for k = 1:(numSlices - 1)
                 boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
-
-
+        if k == 1
+            boundaries(end+1, :) = [size(elements,1); 5; 3];
+        end
+        if k == numSlices - 1
+            boundaries(end+1, :) = [size(elements,1); 6; 3];
+        end
     end
 end
 
 
 
 % Add end caps
-config
 for i = 0:0
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
-    [elementsOuter, boundariesOuter] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, false);
-    % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
@@ -155,32 +196,6 @@ for i = 0:0
                 boundaries(end+1, :) = [size(elements,1); 5; 3];
             end
         end
-        for elem = 1:size(elementsOuter, 1)
-            layer_k = squeeze(elementsOuter(elem,:, :)); 
-            layer_k1 = squeeze(elementsOuter(elem,:, :)); 
-            if j > 1
-                layer_k(:,1) = -R_prev;
-            end
-            layer_k1(:,1) = -R_x;
-            element = [layer_k1; layer_k]; % 8 x 3
-            checkLeftHanded(element);
-
-            elements(end+1, :, :) = element;
-            if j == length(R_end_caps)
-                boundaries(end+1, :) = [size(elements,1); 5; 3];
-            end
-
-            [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-            if isBoundary
-                tag = sliceBoundaries(idx, 2);
-                if tag == 2 
-                    boundaries(end+1, :) = [size(elements,1); 1; 2];
-                end
-                if tag == 3
-                    boundaries(end+1, :) = [size(elements,1); 1; 4];
-                end
-            end
-        end
         R_prev = R_x;
     end
 end
@@ -189,8 +204,6 @@ for i = 208:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
-    [elementsOuter, boundariesOuter] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y, true);
-    % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
@@ -212,32 +225,6 @@ for i = 208:208
                 boundaries(end+1, :) = [size(elements,1); 6; 3];
             end
         end
-        for elem = 1:size(elementsOuter, 1)
-            layer_k = squeeze(elementsOuter(elem,:, :)); 
-            layer_k1 = squeeze(elementsOuter(elem,:, :)); 
-            if j > 1
-                layer_k(:,1) = R_prev;
-            end
-            layer_k1(:,1) = R_x;
-            element = [layer_k; layer_k1]; % 8 x 3
-            checkLeftHanded(element);
-
-            elements(end+1, :, :) = element;
-            if j == length(R_end_caps)
-                boundaries(end+1, :) = [size(elements,1); 6; 3];
-            end
-
-            [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-            if isBoundary
-                tag = sliceBoundaries(idx, 2);
-                if tag == 2 
-                    boundaries(end+1, :) = [size(elements,1); 1; 2];
-                end
-                if tag == 3
-                    boundaries(end+1, :) = [size(elements,1); 1; 4];
-                end
-            end
-        end
         R_prev = R_x;
     end
 end
@@ -247,7 +234,7 @@ xs = squeeze(xs);
 xs = xs(:);
 half_pos = floor(size(xs,1)/2)+1;
 xs = xs(half_pos:end);
-xs = [xs; R_end_caps'];
+% xs = [xs; R_end_caps'];
 [cylElements, cylBoundaries] = wrapCylinder(xs);
 config
 zs = linspace(R_b, R_t, k_inner*2 + 1)(:);
@@ -311,4 +298,4 @@ size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-% plotBC(elements, boundaries)
+plotBC(elements, boundaries)
