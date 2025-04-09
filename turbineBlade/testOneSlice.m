@@ -1,7 +1,7 @@
 % for i = 56:56:56
 % for i = 0:52:0
 % for i = 84:52:84
-for i = 208:1:208
+for i = 0:208:208
 % for i = 156:104:156
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
@@ -27,11 +27,12 @@ for i = 208:1:208
     % [elementsOuter, boundariesOuter, pp_coarse] = meshOuterOMesh(pp, arc_length, arc_length_at_max_y, flipped);
     [elementsOuter, boundariesOuter, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_length, arc_length_at_max_y, flipped);
     % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, flipped);
+    [elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length, arc_length_at_max_y, flipped);
     elements = [elementsOuter; elementsInner;];
+    elements = [elementsInner;];
     % elements = elementsOuter;
     % boundaries = boundariesOuter;
-    plotElements(elementsInner, []);
+    plotElements(elements, []);
     % plotElements(elements, boundariesOuter);
 
     % figure;

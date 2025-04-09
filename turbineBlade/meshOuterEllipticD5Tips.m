@@ -17,10 +17,12 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
     s_fine2 = flip(s_fine)(1:end-1);
     s_fine = [s_fine1(1), s_fine1(3:end-1),...
               s_fine2(1), s_fine2(3:end-1)];
-    % s_fine = [s_fine1, s_fine2];
+    s_fine = [s_fine1, s_fine2];
 
     s_fine = [linspace(0, arc_length_at_max_y, n_top+2*k_inner + 1)(1:end-1), ...
           linspace(arc_length_at_max_y, arc_length, n_bottom+2*k_inner + 1)(1:end-1)];
+
+
     if flipped == true 
         s_fine(s_fine >= arc_length_at_max_y) = s_fine(s_fine >= arc_length_at_max_y) - arc_length;
     end
@@ -54,11 +56,11 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
         [q1, q2, q3] = findQuarterBisectors(p1, p2, p3);
         [q4, q5] = findTrisects(p1, p3, p2);
         if t == 1
-            U = p1 + first_layer_thickness*q4;
+            U = p1 + 1*first_layer_thickness*q4;
             layer_next = [layer_next; U];
-            U = p1 + first_layer_thickness*q2;
+            U = p1 + 1.2*first_layer_thickness*q2;
             layer_next = [layer_next; U];
-            U = p1 + first_layer_thickness*q5;
+            U = p1 + 1*first_layer_thickness*q5;
             layer_next = [layer_next; U];
         else
             U = p1 + first_layer_thickness*q2;
@@ -77,11 +79,11 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
         [q1, q2, q3] = findQuarterBisectors(p1, p2, p3);
         [q4, q5] = findTrisects(p1, p3, p2);
         if t == length(all_points)/2+1
-            U = p1 + first_layer_thickness*q4;
+            U = p1 + 1*first_layer_thickness*q4;
             layer_next = [layer_next; U];
-            U = p1 + first_layer_thickness*q2;
+            U = p1 + 1.2*first_layer_thickness*q2;
             layer_next = [layer_next; U];
-            U = p1 + first_layer_thickness*q5;
+            U = p1 + 1*first_layer_thickness*q5;
             layer_next = [layer_next; U];
         else
             U = p1 + first_layer_thickness*q2;
@@ -162,6 +164,7 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
     Er2=zeros(1,maxit);
 
     weight(i,j) = repmat(1 + 9 * exp(-j/ny*10), nx, 1);
+    weight(i,j) = repmat(0 * exp(-j/ny*10), nx, 1);
 
     for t=1:maxit
         i = 1:nx;

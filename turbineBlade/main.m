@@ -300,4 +300,4 @@ size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-% plotBC(elements, boundaries)
+plotBC(elements, boundaries)
