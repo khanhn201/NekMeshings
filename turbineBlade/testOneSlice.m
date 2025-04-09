@@ -29,7 +29,7 @@ for i = 0:208:208
     % [elementsOuter] = smoothMesh(elementsOuter, boundariesOuter);
     [elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length, arc_length_at_max_y, flipped);
     elements = [elementsOuter; elementsInner;];
-    elements = [elementsInner;];
+    % elements = [elementsInner;];
     % elements = elementsOuter;
     % boundaries = boundariesOuter;
     plotElements(elements, []);
@@ -47,3 +47,5 @@ for i = 0:208:208
     % title('Fitted Spline to the Given Slice2');
     % hold off;
 end
+xs = 0:500:5000;
+% [cylElements, cylBoundaries] = wrapCylinder(xs');

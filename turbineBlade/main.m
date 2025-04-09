@@ -177,7 +177,7 @@ for i = 0:0
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, false);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, false);
+    [elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length, arc_length_at_max_y, false);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
         for elem = 1:size(elementsInner, 1)
@@ -206,7 +206,7 @@ for i = 208:208
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice, true);
-    [elementsInner, boundariesInner] = meshInner(pp, arc_length, arc_length_at_max_y, true);
+    [elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length, arc_length_at_max_y, true);
     for j = 1:length(R_end_caps)
         R_x = R_end_caps(j);
         for elem = 1:size(elementsInner, 1)
@@ -255,7 +255,7 @@ for k = 2:size(zs,1)
         elements(end+1, :, :) = element;
         [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
         if isBoundary
-            boundaries(end+1, :) = [size(elements,1); 3; 3];
+            boundaries(end+1, :) = [size(elements,1); 1; 3];
         end
         if k == 2
             boundaries(end+1, :) = [size(elements,1); 5; 4];
@@ -284,7 +284,7 @@ for k = 2:size(zs,1)
         elements(end+1, :, :) = element;
         [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
         if isBoundary
-            boundaries(end+1, :) = [size(elements,1); 3; 3];
+            boundaries(end+1, :) = [size(elements,1); 1; 3];
         end
         if k == 2
             boundaries(end+1, :) = [size(elements,1); 6; 4];

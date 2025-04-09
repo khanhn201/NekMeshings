@@ -3,105 +3,151 @@ function [elements, boundaries] = wrapCylinder(xs)
     elements = [];
     boundaries = [];
 
-    % Inner 
-    r = xs(2);
-    rt =(r + xs(3))/2;
-    p0 = [0;0;0;]';
-    p1 = [-rt/sqrt(2); rt/sqrt(2); 0;]';
-    p2 = [-r; 0; 0;]';
-    p3 = [0; r; 0;]';
-    p4 = (p1+p2+p3)/4;
-
-    for i=1:2
-        element = [];
-        element(1, :) = p0;
-        element(2, :) = p3;
-        element(3, :) = (p3+p1)/2;
-        element(4, :) = p4;
-
-        theta = -90 *(i-1)* pi / 180;
-        R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-        element = (R * element')';
-        elements(end+1, :, :) = element;
-
-        element = [];
-        element(1, :) = p0;
-        element(2, :) = p4;
-        element(3, :) = (p2+p1)/2;
-        element(4, :) = p2;
-
-        theta = -90 *(i-1)* pi / 180;
-        R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-        element = (R * element')';
-        elements(end+1, :, :) = element;
-
-        element = [];
-        element(1, :) = p4;
-        element(2, :) = (p1+p3)/2;
-        element(3, :) = p1;
-        element(4, :) = (p1+p2)/2;
-
-        theta = -90 *(i-1)* pi / 180;
-        R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-        element = (R * element')';
-        elements(end+1, :, :) = element;
-    end
-
-    for i = 1:2
-        r_prev = xs(2);
-        r = xs(3);
-
-        for j = 1:4
-            element = [];
-            rm = r_prev;
-            if j == 1
-                element(1, 1:3) = p2;
-                element(2, 1:3) = (p1 + p2)/2;
-            end
-            if j == 2
-                element(1, 1:3) = (p1 + p2)/2;
-                element(2, 1:3) = p1;
-            end
-            if j == 3
-                element(1, 1:3) = p1;
-                element(2, 1:3) = (p1 + p3)/2;
-            end
-            if j == 4
-                element(1, 1:3) = (p1 + p3)/2;
-                element(2, 1:3) = p3;
-            end
-            element(4, 1) = -r*cosd((j-1)*22.5);
-            element(4, 2) = r*sind((j-1)*22.5);
-            element(3, 1) = -r*cosd((j)*22.5);
-            element(3, 2) = r*sind((j)*22.5);
-            element(1:4,3) = 0; % z coord
-
-            theta = -90 * (i-1)*pi / 180;
-            R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-            element = (R * element')';
-            elements(end+1, :, :) = element;
+    r_square = xs(2);
+    r_cir = xs(end);
+    function point=bottom_curve(u)
+        if u <= k_cyl
+            point = [
+                -r_square;
+                u/k_cyl*r_square;
+                0;
+            ]';
         end
-
+        if u > k_cyl && u <= 3*k_cyl
+            point = [
+                (u-2*k_cyl)/k_cyl*r_square;
+                r_square;
+                0;
+            ]';
+        end
+        if u > 3*k_cyl
+            point = [
+                r_square;
+                (4*k_cyl-u)/k_cyl*r_square;
+                0;
+            ]';
+        end
+    end
+    function point=top_curve(u)
+        point = [
+            -r_cir*cos(u/4/k_cyl*pi);
+            r_cir*sin(u/4/k_cyl*pi);
+            0;
+        ]';
+    end
+    function point=curve_interp(u, v)
+        point = v*top_curve(u) + (1-v)*bottom_curve(u);
     end
 
-    for i = 4:size(xs,1)
+    p00 = [0;0;0]';
+    p11 = [-r_square;r_square;0]';
+    p12 = [r_square;r_square;0]';
+
+    element = zeros(4,3);
+    element(1, 1:3) = p11;
+    element(2, 1:3) = [
+        -r_square;
+        (k_cyl-1)/k_cyl*r_square;
+        0;
+    ]';
+    element(3, 1:3) = (k_cyl-1)/k_cyl*p11 + 1/k_cyl*p00;
+    element(4, 1:3) = [
+        -(k_cyl-1)/k_cyl*r_square;
+        r_square;
+        0;
+    ]';
+    elements(end+1, :, :) = element;
+
+    element = zeros(4,3);
+    element(1, 1:3) = p12;
+    element(2, 1:3) = [
+        (k_cyl-1)/k_cyl*r_square;
+        r_square;
+        0;
+    ]';
+    element(3, 1:3) = (k_cyl-1)/k_cyl*p12 + 1/k_cyl*p00;
+    element(4, 1:3) = [
+        r_square;
+        (k_cyl-1)/k_cyl*r_square;
+        0;
+    ]';
+    elements(end+1, :, :) = element;
+
+    for i = 1:k_cyl-1
+        element = zeros(4,3);
+        element(1, 1:3) = [
+            -r_square;
+            i/k_cyl*r_square;
+            0;
+        ]';
+        element(2, 1:3) = [
+            -r_square;
+            (i-1)/k_cyl*r_square;
+            0;
+        ]';
+        element(3, 1:3) = (i-1)/k_cyl*p11 + (k_cyl-i+1)/k_cyl*p00;
+        element(4, 1:3) = (i)/k_cyl*p11 + (k_cyl-i)/k_cyl*p00;
+        elements(end+1, :, :) = element;
+
+        element = zeros(4,3);
+        element(1, 1:3) = [
+            (i+1-k_cyl)/k_cyl*r_square;
+            r_square;
+            0;
+        ]';
+        element(2, 1:3) = [
+            (i-k_cyl)/k_cyl*r_square;
+            r_square;
+            0;
+        ]';
+        element(3, 1:3) = (i)/k_cyl*p00 + (k_cyl-i)/k_cyl*p11;
+        element(4, 1:3) = (i+1)/k_cyl*p00 + (k_cyl-i-1)/k_cyl*p11;
+        elements(end+1, :, :) = element;
+
+        element = zeros(4,3);
+        element(1, 1:3) = [
+            (i)/k_cyl*r_square;
+            r_square;
+            0;
+        ]';
+        element(2, 1:3) = [
+            (i-1)/k_cyl*r_square;
+            r_square;
+            0;
+        ]';
+        element(3, 1:3) = (i-1)/k_cyl*p12 + (k_cyl-i+1)/k_cyl*p00;
+        element(4, 1:3) = (i)/k_cyl*p12 + (k_cyl-i)/k_cyl*p00;
+        elements(end+1, :, :) = element;
+
+        element = zeros(4,3);
+        element(1, 1:3) = [
+            r_square;
+            (k_cyl-i-1)/k_cyl*r_square;
+            0;
+        ]';
+        element(2, 1:3) = [
+            r_square;
+            (k_cyl-i)/k_cyl*r_square;
+            0;
+        ]';
+        element(3, 1:3) = (i)/k_cyl*p00 + (k_cyl-i)/k_cyl*p12;
+        element(4, 1:3) = (i-1)/k_cyl*p00 + (k_cyl-i-1)/k_cyl*p12;
+        elements(end+1, :, :) = element;
+    end
+
+
+    for i = 3:size(xs,1)
         r_prev = xs(i-1);
         r = xs(i);
+        v = (r-r_square)/(r_cir-r_square);
+        v_prev = (r_prev-r_square)/(r_cir-r_square);
 
-        for j = 1:8
-            element = [];
-            element(1, 1) = -r_prev;
-            element(1, 2) = 0;
-            element(2, 1) = -r_prev*cosd(22.5);
-            element(2, 2) = r_prev*sind(22.5);
-            element(4, 1) = -r;
-            element(4, 2) = 0;
-            element(3, 1) = -r*cosd(22.5);
-            element(3, 2) = r*sind(22.5);
-            element(1:4,3) = 0; % z coord
-            theta = -22.5 * (j-1)*pi / 180;
-            R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-            element = (R * element')';
+        for j = 1:4*k_cyl
+            element = zeros(4,3);
+            element(1, 1:3) = curve_interp(j,v);
+            element(2, 1:3) = curve_interp(j-1,v);
+            element(3, 1:3) = curve_interp(j-1,v_prev);
+            element(4, 1:3) = curve_interp(j,v_prev);
 
             elements(end+1, :, :) = element;
             if i == size(xs,1)
@@ -113,69 +159,8 @@ function [elements, boundaries] = wrapCylinder(xs)
     elements(:, :, 2) = elements(:, :, 2)/xs(end)*(xs(end)-R_a);
     elements(:, :, 2) = elements(:, :, 2) + R_a;
     checkCounterClockwise(elements);
+    % plotElements(elements, [])
 end
-
-
-function [elements, boundaries] = wrapCylinder4Angles(xs)
-    config
-    elements = [];
-    boundaries = [];
-
-    % Inner 
-    r = xs(2);
-    element = [];
-    element(1, 1) = 0;
-    element(1, 2) = 0;
-    element(2, 1) = r;
-    element(2, 2) = 0;
-    element(3, 1) = r/sqrt(2);
-    element(3, 2) = r/sqrt(2);
-    element(4, 1) = 0;
-    element(4, 2) = r;
-    element(1:4,3) = 0; % z coord
-    elements(end+1, :, :) = element;
-    element = [];
-    element(1, 1) = 0;
-    element(1, 2) = 0;
-    element(2, 1) = 0;
-    element(2, 2) = r;
-    element(3, 1) = -r/sqrt(2);
-    element(3, 2) = r/sqrt(2);
-    element(4, 1) = -r;
-    element(4, 2) = 0;
-    element(1:4,3) = 0; % z coord
-    elements(end+1, :, :) = element;
-
-    for i = 3:size(xs,1)
-        r_prev = xs(i-1);
-        r = xs(i);
-
-        for j = 1:4
-            element = [];
-            element(1, 1) = -r_prev;
-            element(1, 2) = 0;
-            element(2, 1) = -r_prev/sqrt(2);
-            element(2, 2) = r_prev/sqrt(2);
-            element(4, 1) = -r;
-            element(4, 2) = 0;
-            element(3, 1) = -r/sqrt(2);
-            element(3, 2) = r/sqrt(2);
-            element(1:4,3) = 0; % z coord
-            theta = -45 * (j-1)*pi / 180;
-            R = [cos(theta), -sin(theta), 0; sin(theta), cos(theta), 0; 0, 0, 0];
-            element = (R * element')';
-
-            elements(end+1, :, :) = element;
-            if i == size(xs,1)
-                boundaries(end+1, :) = [size(elements, 1); 9;];
-            end
-        end
-
-    end
-    elements(:, :, 2) = elements(:, :, 2) + R_a;
-    checkCounterClockwise(elements);
-end
-
 
 function checkCounterClockwise(elements)
     for k = 1:size(elements, 1)
@@ -216,6 +201,11 @@ function plotElements(elements, boundaries)
         % else
         %     plot(y, z, 'k-', 'LineWidth', 0.5);
         % end
+        centroid_y = mean(y(1:end-1));  % exclude the repeated first point
+        centroid_x = mean(x(1:end-1));
+        
+        % Plot element number
+        text(centroid_x, centroid_y, num2str(k), 'FontSize', 14, 'Color', 'b');
         plot(x, y, 'k-', 'LineWidth', 0.5);
 
     end
