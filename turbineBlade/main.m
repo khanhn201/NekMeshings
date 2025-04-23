@@ -108,50 +108,50 @@ for k = 1:(numSlices - 1)
             tag = sliceBoundaries(idx, 2);
             if tag == 1
                 if (k > length(R_end_caps)) && (k < (numSlices - length(R_end_caps)))
-                % if (k > length(R_end_caps)) && (k < (numSlices - length(R_end_caps)))
+                    % if (k > length(R_end_caps)) && (k < (numSlices - length(R_end_caps)))
                     boundaries(end+1, :) = [size(elements,1); 3; 1];
-                % else
-                %     boundaries(end+1, :) = [size(elements,1); 3; 5];
-                % end
-                count_wall = count_wall + 1;
-                spline2 = connectingSplines{count_wall+1};
-                spline4 = connectingSplines{count_wall};
+                    % else
+                    %     boundaries(end+1, :) = [size(elements,1); 3; 5];
+                    % end
+                    count_wall = count_wall + 1;
+                    spline2 = connectingSplines{count_wall+1};
+                    spline4 = connectingSplines{count_wall};
 
-                j = count_wall;
-                if xs(k) > 0
-                    j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
-                end
-                spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-                spline1start = spline1.breaks(j);
-                spline1end = spline1.breaks(j + 1);
+                    j = count_wall;
+                    if xs(k) > 0
+                        j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
+                    end
+                    spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+                    spline1start = spline1.breaks(j);
+                    spline1end = spline1.breaks(j + 1);
 
-                j = count_wall;
-                if xs(k+1) > 0
-                    j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
-                end
-                spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-                spline3start = spline3.breaks(j);
-                spline3end = spline3.breaks(j + 1);
+                    j = count_wall;
+                    if xs(k+1) > 0
+                        j = mod(count_wall + n_top + 2*k_inner - 1, 2*n_top + 4*k_inner) + 1;
+                    end
+                    spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+                    spline3start = spline3.breaks(j);
+                    spline3end = spline3.breaks(j + 1);
 
-                spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-                spline2start = spline2.breaks(k);
-                spline2end = spline2.breaks(k+1);
+                    spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
+                    spline2start = spline2.breaks(k);
+                    spline2end = spline2.breaks(k+1);
 
-                spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-                spline4start = spline4.breaks(k);
-                spline4end = spline4.breaks(k+1);
+                    spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
+                    spline4start = spline4.breaks(k);
+                    spline4end = spline4.breaks(k+1);
 
-                filename = sprintf('surfaces/surface%08d.txt', size(elements,1));
-                fid = fopen(filename, "w");
-                fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline1piece.');
-                fprintf(fid, '%15.7g %15.7g\n', spline1start, spline1end);
-                fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline2piece.');
-                fprintf(fid, '%15.7g %15.7g\n', spline2start, spline2end);
-                fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline3piece.');
-                fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
-                fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
-                fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
-                fclose(fid);
+                    filename = sprintf('surfaces/surface%08d.txt', size(elements,1));
+                    fid = fopen(filename, "w");
+                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline1piece.');
+                    fprintf(fid, '%15.7g %15.7g\n', spline1start, spline1end);
+                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline2piece.');
+                    fprintf(fid, '%15.7g %15.7g\n', spline2start, spline2end);
+                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline3piece.');
+                    fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
+                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
+                    fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
+                    fclose(fid);
                 end
             end
             if tag == 2 
@@ -300,4 +300,4 @@ size(boundaries)
 % plotElements3D(elements)
 
 exportREA("output.rea", elements, boundaries)
-plotBC(elements, boundaries)
+% plotBC(elements, boundaries)

@@ -1,7 +1,7 @@
 % for i = 56:56:56
 % for i = 0:52:0
 % for i = 84:52:84
-for i = 0:208:208
+for i = 56:56:208
 % for i = 156:104:156
     filename = sprintf('slices/slice%04d.txt', i);
     slice = readSliceFile(filename);

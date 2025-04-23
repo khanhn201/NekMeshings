@@ -1,12 +1,12 @@
-n_top = 13;
+n_top = 20;
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 % n_leading = 3;
 
 k_inner = 5;
-k_outer = 13;
-k_cyl = 8;
+k_outer = 10;
+k_cyl = 10;
 mult = 1.3;
-first_layer_thickness = 13;
+first_layer_thickness = 6;
 delta_inner = 0.2;
 diamond_mult = 1.5;
 

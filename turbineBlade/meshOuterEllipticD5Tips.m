@@ -163,8 +163,8 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
     Er1=zeros(1,maxit);
     Er2=zeros(1,maxit);
 
-    weight(i,j) = repmat(1 + 9 * exp(-j/ny*10), nx, 1);
-    weight(i,j) = repmat(0 * exp(-j/ny*10), nx, 1);
+    weight(i,j) = repmat(1 + 9 * exp(-j/ny), nx, 1);
+    % weight(i,j) = repmat(0 * exp(-j/ny*10), nx, 1);
 
     for t=1:maxit
         i = 1:nx;
@@ -192,14 +192,14 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
         newX(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
             2*beta(i,j).*(X(ip,j+1)-X(im,j+1)-X(ip,j-1) + X(im,j-1))/4 ...
             -alpha(i,j).*(X(ip,j)+X(im,j))-gamma(i,j).*(X(i,j+1)+X(i,j-1))...
-            + weight(i,j).*x_xi 
-            + weight(i,j).*x_eta
+            % + 2*x_xi 
+            % + 2*weight(i,j).*x_eta
         );
         newY(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
             2*beta(i,j).*(Y(ip,j+1)-Y(im,j+1)-Y(ip,j-1) + Y(im,j-1))/4 ...
             -alpha(i,j).*(Y(ip,j)+Y(im,j))-gamma(i,j).*(Y(i,j+1)+Y(i,j-1))...
-            + weight(i,j).*y_xi 
-            + weight(i,j).*y_eta
+            % + 2*y_xi 
+            % + 2*weight(i,j).*y_eta
         );
         Er1(1,t)=max(max(abs(newX-X)));
         Er2(1,t)=max(max(abs(newY-Y)));
@@ -224,18 +224,41 @@ function [elements,boundaries, pp_coarse] = meshOuterEllipticD5Tips(pp, arc_leng
     % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
     % end
 
-    for i=1:nx
-    for j=2:ny
-        inext = i+1;
+    for i = 1:nx
+    for j = 2:ny
+        inext = i + 1;
         if i == nx
             inext = 1;
         end
-        element = zeros(4,3);
-        element(1,:) = [x, X(inext,j), Y(inext,j)];
-        element(2,:) = [x, X(i,j), Y(i,j)];
-        element(3,:) = [x, X(i,j-1), Y(i,j-1)];
-        element(4,:) = [x, X(inext,j-1), Y(inext,j-1)];
-        elements(end+1, :, :) = element;
+        p1 = [x, X(inext,j),   Y(inext,j)];
+        p2 = [x, X(i,j),       Y(i,j)];
+        p3 = [x, X(i,j-1),     Y(i,j-1)];
+        p4 = [x, X(inext,j-1), Y(inext,j-1)];
+        if j == 2
+            % Split first layer
+            element1 = zeros(4,3);
+            element1(1,:) = p1;
+            element1(2,:) = p2;
+            element1(3,:) = (p2+p3)/2;
+            element1(4,:) = (p4+p1)/2;
+            elements(end+1, :, :) = element1;
+
+            element2 = zeros(4,3);
+            element2(1,:) = (p4+p1)/2;
+            element2(2,:) = (p2+p3)/2;
+            element2(3,:) = p3;
+            element2(4,:) = p4;
+            elements(end+1, :, :) = element2;
+        else
+            % Regular element
+            element = zeros(4,3);
+            element(1,:) = p1;
+            element(2,:) = p2;
+            element(3,:) = p3;
+            element(4,:) = p4;
+            elements(end+1, :, :) = element;
+        end
+
         if j == ny
             if i > k_inner && i < k_inner + n_top + 3
                 boundaries(end+1, :) = [size(elements, 1); 2;];
