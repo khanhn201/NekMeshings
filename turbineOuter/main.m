@@ -117,9 +117,9 @@ size(boundaries)
 % plotElements3D(elements)
 
 tmp = elements(:, :, 1);
-elements(:, :, 1) = -elements(:, :, 3);
-elements(:, :, 3) = tmp;
+elements(:, :, 1) = -elements(:, :, 2);
+elements(:, :, 2) = tmp;
 
 
 exportREA("output.rea", elements, boundaries)
-plotBC(elements, boundaries)
+% plotBC(elements, boundaries)
