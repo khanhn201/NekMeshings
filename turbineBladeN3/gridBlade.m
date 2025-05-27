@@ -1,67 +1,51 @@
-function [elements, boundaries] = wrapFan(zs)
+function [elements, boundaries] = gridBlade(zs)
     config
     elements = [];
     boundaries = [];
 
-    displacement = R_a/sqrt(3);
-    zs(:) = zs(:) - displacement;
-
     r_square = zs(2);
     r_cir = zs(end);
-    pd1 = [-r_square*cos(- pi/6); 0; r_square*sin(- pi/6)]';
-    pd2 = [-r_square*cos(pi/3 - pi/6); 0; r_square*sin(pi/3 - pi/6)]';
-    pd3 = [-r_square*cos(2*pi/3 - pi/6); 0; r_square*sin(2*pi/3 - pi/6)]';
+    pd1 = [-R_a; 0; z_shift]';
+    pd2 = [R_a; 0; z_shift]';
+    pd3 = [-R_a; 0; zs(end)]';
+    pd4 = [R_a; 0; zs(end)]';
 
+    k = n_top + 2;
     function point=bottom_curve(u)
-        if u <= k_cyl
-            point = pd2*u/k_cyl + pd1*(k_cyl-u)/k_cyl;
-        end
-        if u > k_cyl
-            point = pd3*(u-k_cyl)/k_cyl + pd2*(2*k_cyl-u)/k_cyl;
-        end
+        point = pd2*(u)/k + pd1*(k-u)/k;
     end
-    % function point=top_curve(u)
-    %     point = [
-    %         -r_cir*cos(u/2/k_cyl*pi*2/3 - pi/6);
-    %         0;
-    %         r_cir*sin(u/2/k_cyl*pi*2/3 - pi/6);
-    %     ]';
-    % end
-    function point = top_curve(u)
-        u_dense = (k_cyl*2) * (1 - cos(pi * u / (k_cyl*2))) / 2;
-        angle = u_dense / (2 * k_cyl) * 2*pi/3 - pi/6;
-        point = [
-            -r_cir * cos(angle);
-            0;
-            r_cir * sin(angle);
-        ]';
+    function point=top_curve(u)
+        point = pd4*(u)/k + pd3*(k-u)/k;
     end
     function point=curve_interp(u, v)
         point = v*top_curve(u) + (1-v)*bottom_curve(u);
     end
 
 
-    element = zeros(4,3);
-    element(1, 1:3) = pd2;
-    element(2, 1:3) = bottom_curve(k_cyl-1);
-    element(3, 1:3) = (k_cyl-1)/k_cyl*pd2;
-    element(4, 1:3) = bottom_curve(k_cyl+1);
-    elements(end+1, :, :) = element;
+    pd5 = [-R_a; 0; R_a/sqrt(3)]';
+    pd6 = [R_a; 0; R_a/sqrt(3)]';
 
-    for i = 1:k_cyl-1
+    % element = zeros(4,3);
+    % element(1, 1:3) = pd2;
+    % element(2, 1:3) = bottom_curve(n_top-1);
+    % element(3, 1:3) = (n_top-1)/n_top*pd2;
+    % element(4, 1:3) = bottom_curve(n_top+1);
+    % elements(end+1, :, :) = element;
+    for j = 1:k
         element = zeros(4,3);
-        element(1, 1:3) = bottom_curve(i);
-        element(2, 1:3) = bottom_curve(i-1);
-        element(3, 1:3) = (i-1)/k_cyl*pd2;
-        element(4, 1:3) = (i)/k_cyl*pd2;
-        elements(end+1, :, :) = element;
+        element(1, 1:3) = bottom_curve(j);
+        element(2, 1:3) = bottom_curve(j-1);
+        element(3, 1:3) = pd5*(k/2-j+1)/k*2;
+        element(4, 1:3) = pd5*(k/2-j)/k*2;
+        if j > k/2
+            element(3, 1:3) = pd6*(j-k/2-1)/k*2;
+            element(4, 1:3) = pd6*(j-k/2)/k*2;
+        end
 
-        element = zeros(4,3);
-        element(1, 1:3) = bottom_curve(k_cyl+i+1);
-        element(2, 1:3) = bottom_curve(k_cyl+i);
-        element(3, 1:3) = (k_cyl-i)/k_cyl*pd2;
-        element(4, 1:3) = (k_cyl-i-1)/k_cyl*pd2;
         elements(end+1, :, :) = element;
+        if i == size(zs,1)
+            boundaries(end+1, :) = [size(elements, 1); 9;];
+        end
     end
 
     for i = 3:size(zs,1)
@@ -70,7 +54,7 @@ function [elements, boundaries] = wrapFan(zs)
         v = (r-r_square)/(r_cir-r_square);
         v_prev = (r_prev-r_square)/(r_cir-r_square);
 
-        for j = 1:2*k_cyl
+        for j = 1:k
             element = zeros(4,3);
             element(1, 1:3) = curve_interp(j,v);
             element(2, 1:3) = curve_interp(j-1,v);
@@ -85,11 +69,6 @@ function [elements, boundaries] = wrapFan(zs)
 
     end
     checkCounterClockwise(elements);
-
-    % Displace
-    elements(:, :, 1) -= R_a;
-    elements(:, :, 3) += displacement;
-
 
     % plotElements(elements, []);
 end

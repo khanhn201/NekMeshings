@@ -1,11 +1,11 @@
-rmdir('./surfaces/', 's')
-mkdir('./surfaces/')
-
 % Mesh slices
 % slicesCoord = readSlices('iea15.mat');
 slicesCoord = readSlices('nrel5mw.mat');
-
 config
+zss = slicesCoord(:, 1, 3);
+zs = linspace(z_shift, zss(end), n_slices);
+slicesCoord = interp1(zss, slicesCoord, zs);
+
 zs = [];
 sliceElements = [];
 sliceBoundaries = [];
@@ -17,11 +17,9 @@ sliceElements(end+1, :, :, :) = elements;
 sliceBoundaries = boundaries;
 zs(end+1) = 0;
 sliceSplines{size(sliceElements,1)} = pp_coarse;
-
-for i = 1:slice_spacing:size(slicesCoord, 1)
-    i
+for i = 1:n_slices
     slice = squeeze(slicesCoord(i, :, :));
-    slice(:, 3) += z_shift;
+    slice(:, 3) = slice(1, 3);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
     [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
 
@@ -61,12 +59,13 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
     connectingSplines{i} = pp_coarse;
 end
 % plotSplines
-% asdasfdas(asdas)
+% asdfasf(sadfasdf)
 
 % Connect slices
 disp("connect slices")
 elements = [];
 boundaries = [];
+surfaces = struct('elem', {}, 'splineCoeffs', {}, 'splineEnds', {});
 [numSlices, numElements, numVertices, dim] = size(sliceElements);
 for k = 1:(numSlices - 1)
 % for k = 1:1
@@ -86,6 +85,7 @@ for k = 1:(numSlices - 1)
                     spline1 = sliceSplines{k};
                     spline3 = sliceSplines{k+1};
                     boundaries(end+1, :) = [size(elements,1); 3; 1];
+
                     count_wall = count_wall + 1;
                     spline2 = connectingSplines{count_wall+1};
                     spline4 = connectingSplines{count_wall};
@@ -95,7 +95,6 @@ for k = 1:(numSlices - 1)
                     spline1start = spline1.breaks(j);
                     spline1end = spline1.breaks(j + 1);
 
-                    j = count_wall;
                     spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
                     spline3start = spline3.breaks(j);
                     spline3end = spline3.breaks(j + 1);
@@ -107,24 +106,38 @@ for k = 1:(numSlices - 1)
                     spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
                     spline4start = spline4.breaks(k);
                     spline4end = spline4.breaks(k+1);
-
-                    filename = sprintf('surfaces/surface%08d.txt', size(elements,1));
-                    fid = fopen(filename, "w");
-                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline1piece.');
-                    fprintf(fid, '%15.7g %15.7g\n', spline1start, spline1end);
-                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline2piece.');
-                    fprintf(fid, '%15.7g %15.7g\n', spline2start, spline2end);
-                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline3piece.');
-                    fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
-                    fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
-                    fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
-                    fclose(fid);
+                    
+                    if k > 1
+                        surfaceStruct.elem = size(elements,1);
+                        surfaceStruct.splineCoeffs = zeros(4, 3, 4);
+                        surfaceStruct.splineCoeffs(1,:,:) = spline1piece;
+                        surfaceStruct.splineCoeffs(2,:,:) = spline2piece;
+                        surfaceStruct.splineCoeffs(3,:,:) = spline3piece;
+                        surfaceStruct.splineCoeffs(4,:,:) = spline4piece;
+                        surfaceStruct.splineEnds = zeros(4, 2);
+                        surfaceStruct.splineEnds(1,:) = [spline1start, spline1end];
+                        surfaceStruct.splineEnds(2,:) = [spline2start, spline2end];
+                        surfaceStruct.splineEnds(3,:) = [spline3start, spline3end];
+                        surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
+                        surfaces(end+1) = surfaceStruct;
+                    end
+                    % filename = sprintf('surfaces/surface%08d.txt', size(elements,1));
+                    % fid = fopen(filename, "w");
+                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline1piece.');
+                    % fprintf(fid, '%15.7g %15.7g\n', spline1start, spline1end);
+                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline2piece.');
+                    % fprintf(fid, '%15.7g %15.7g\n', spline2start, spline2end);
+                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline3piece.');
+                    % fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
+                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
+                    % fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
+                    % fclose(fid);
                 end
             end
             if tag == 2 
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
             end
-            if tag == 3
+            if tag == 3 && R_downstream == 0
                 boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
@@ -133,7 +146,6 @@ for k = 1:(numSlices - 1)
         end
     end
 end
-
 
 
 % Add end caps inner
@@ -186,7 +198,7 @@ for k = 2:size(ys,1)
         if isBoundary
             boundaries(end+1, :) = [size(elements,1); 1; 3];
         end
-        if k == 2
+        if k == 2 && R_downstream == 0
             boundaries(end+1, :) = [size(elements,1); 6; 4];
         end
         if k == size(ys,1)
@@ -196,47 +208,103 @@ for k = 2:size(ys,1)
 end
 % plotElements3D(elements)
 
+% Extends downstream
+if R_downstream < 0
+    ys = linspace(R_downstream, R_b, k_downstream)(:);
+    for k = 2:size(ys,1)
+        y_prev = ys(k-1);
+        y = ys(k);
+        for elem = 1:size(cylElements,1)
+            cylElemk = squeeze(cylElements(elem, :, :));
+            cylElemk(:, 2) = y_prev;
+            cylElemk1 = squeeze(cylElements(elem, :, :));
+            cylElemk1(:, 2) = y;
+            element = [cylElemk1; cylElemk];
+
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
+            if isBoundary
+                boundaries(end+1, :) = [size(elements,1); 1; 3];
+            end
+            if k == 2
+                boundaries(end+1, :) = [size(elements,1); 6; 4];
+            end
+        end
+    end
+    [gridElements, gridBoundaries] = gridBlade(zs);
+    for k = 2:size(ys,1)
+        y_prev = ys(k-1);
+        y = ys(k);
+        for elem = 1:size(gridElements,1)
+            cylElemk = squeeze(gridElements(elem, :, :));
+            cylElemk(:, 2) = y_prev;
+            cylElemk1 = squeeze(gridElements(elem, :, :));
+            cylElemk1(:, 2) = y;
+            element = [cylElemk1; cylElemk];
+
+            checkLeftHanded(element);
+
+            elements(end+1, :, :) = element;
+            [isBoundary, idx] = ismember(elem, gridBoundaries(:, 1));
+            if isBoundary
+                boundaries(end+1, :) = [size(elements,1); 1; 3];
+            end
+            if k == 2
+                boundaries(end+1, :) = [size(elements,1); 6; 4];
+            end
+        end
+    end
+end
+
 
 % Replicate 2 more rotated copies
-N_elem = size(elements,1);
+N_elem = size(elements,1)
 groupElements = elements;
 groupBoundaries = boundaries;
-for i=1:N_elem
-    R = [cos(2*pi/3), 0, -sin(2*pi/3);
-         0,           1,            0;
-         sin(2*pi/3), 0, cos(2*pi/3)];
-    element = squeeze(elements(i, :, :));
-    for j=1:8
-        element(j, :) = (R*squeeze(element(j, :))')';
+for k=1:2
+    for i=1:N_elem
+        R = [cos(2*k*pi/3), 0, -sin(2*k*pi/3);
+             0,           1,            0;
+             sin(2*k*pi/3), 0, cos(2*k*pi/3)];
+        element = squeeze(elements(i, :, :));
+        for j=1:8
+            element(j, :) = (R*squeeze(element(j, :))')';
+        end
+        groupElements(end+1, :, :) = element;
     end
-    groupElements(end+1, :, :) = element;
-end
-for i=1:size(boundaries, 1)
-    boundary = boundaries(i, :);
-    boundary(1, 1) += N_elem;
-    groupBoundaries(end+1, :) = boundary;
-end
-for i=1:N_elem
-    R = [cos(4*pi/3), 0, -sin(4*pi/3);
-         0,           1,            0;
-         sin(4*pi/3), 0, cos(4*pi/3)];
-    element = squeeze(elements(i, :, :));
-    for j=1:8
-        element(j, :) = (R*squeeze(element(j, :))')';
+    for i=1:size(boundaries, 1)
+        boundary = boundaries(i, :);
+        boundary(1, 1) += k*N_elem;
+        groupBoundaries(end+1, :) = boundary;
     end
-    groupElements(end+1, :, :) = element;
-end
-for i=1:size(boundaries, 1)
-    boundary = boundaries(i, :);
-    boundary(1, 1) += 2*N_elem;
-    groupBoundaries(end+1, :) = boundary;
 end
 size(groupElements)
 size(groupBoundaries)
 
 
 
+rmdir('./surfaces/', 's')
+mkdir('./surfaces/')
+for k=1:3
+    R = [cos(2*(k-1)*pi/3), 0, -sin(2*(k-1)*pi/3);
+         0,           1,            0;
+         sin(2*(k-1)*pi/3), 0, cos(2*(k-1)*pi/3)];
+    for i=1:length(surfaces)
+        element = surfaces(i).elem + (k-1)*N_elem;
+        filename = sprintf('surfaces/surface%08d.txt', element);
+        fid = fopen(filename, "w");
+        for j = 1:4
+            splinepiece = zeros(3,4);
+            splinepiece(:, :) = surfaces(i).splineCoeffs(j,:,:);
+            rotated_piece = R * splinepiece;
+            fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', rotated_piece.');
+            fprintf(fid, '%15.7g %15.7g\n', surfaces(i).splineEnds(j,1), surfaces(i).splineEnds(j,2));
+        end
+        fclose(fid);
+    end
+end
+exportREA("turbineInner.rea", groupElements, groupBoundaries)
 
-
-% exportREA("turbineInner.rea", groupElements, groupBoundaries)
-plotBC(groupElements, groupBoundaries)
+% plotBC(groupElements, groupBoundaries)

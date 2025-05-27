@@ -121,5 +121,5 @@ elements(:, :, 1) = -elements(:, :, 2);
 elements(:, :, 2) = tmp;
 
 
-exportREA("output.rea", elements, boundaries)
+exportREA("turbineOuter.rea", elements, boundaries)
 % plotBC(elements, boundaries)
