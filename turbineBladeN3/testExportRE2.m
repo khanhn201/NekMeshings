@@ -32,3 +32,4 @@ end
 size(elements)
 size(boundaries)
 exportRE2('testa', elements, boundaries)
+plotBC(elements, boundaries)

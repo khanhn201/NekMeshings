@@ -29,7 +29,7 @@ function exportRE2(filename, elements, boundaries)
   num_dim = 3;
   num_elem = size(elements, 1);
   nBC = 1;
-  header = sprintf('#v004 %16d %3d %16d %4d hdr', num_elem, num_dim, num_elem, nBC);
+  header = sprintf('#v004%16d%3d%16d%4d hdr', num_elem, num_dim, num_elem, nBC);
   hdr = blanks(80);
   hdr(1:length(header)) = header;
   fwrite(fid, hdr, 'char');

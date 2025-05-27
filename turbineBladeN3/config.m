@@ -4,7 +4,7 @@ n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 
 k_inner = 5;
 k_outer = 10;
-k_cyl = 10;
+k_cyl = 5;
 k_downstream = 6;
 mult = 1.3;
 first_layer_thickness = 0.05;
