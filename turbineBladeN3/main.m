@@ -121,17 +121,6 @@ for k = 1:(numSlices - 1)
                         surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
                         surfaces(end+1) = surfaceStruct;
                     end
-                    % filename = sprintf('surfaces/surface%08d.txt', size(elements,1));
-                    % fid = fopen(filename, "w");
-                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline1piece.');
-                    % fprintf(fid, '%15.7g %15.7g\n', spline1start, spline1end);
-                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline2piece.');
-                    % fprintf(fid, '%15.7g %15.7g\n', spline2start, spline2end);
-                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline3piece.');
-                    % fprintf(fid, '%15.7g %15.7g\n', spline3start, spline3end);
-                    % fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', spline4piece.');
-                    % fprintf(fid, '%15.7g %15.7g\n', spline4start, spline4end);
-                    % fclose(fid);
                 end
             end
             if tag == 2 
@@ -263,6 +252,7 @@ end
 N_elem = size(elements,1)
 groupElements = elements;
 groupBoundaries = boundaries;
+groupSurfaces = struct('elem', {}, 'splineCoeffs', {}, 'splineEnds', {});
 for k=1:2
     for i=1:N_elem
         R = [cos(2*k*pi/3), 0, -sin(2*k*pi/3);
@@ -280,30 +270,43 @@ for k=1:2
         groupBoundaries(end+1, :) = boundary;
     end
 end
-size(groupElements)
-size(groupBoundaries)
-
-
-
-rmdir('./surfaces/', 's')
-mkdir('./surfaces/')
 for k=1:3
     R = [cos(2*(k-1)*pi/3), 0, -sin(2*(k-1)*pi/3);
          0,           1,            0;
          sin(2*(k-1)*pi/3), 0, cos(2*(k-1)*pi/3)];
     for i=1:length(surfaces)
         element = surfaces(i).elem + (k-1)*N_elem;
-        filename = sprintf('surfaces/surface%08d.txt', element);
-        fid = fopen(filename, "w");
+        surfaceStruct.elem = element;
+        surfaceStruct.splineCoeffs = zeros(4, 3, 4);
         for j = 1:4
             splinepiece = zeros(3,4);
             splinepiece(:, :) = surfaces(i).splineCoeffs(j,:,:);
             rotated_piece = R * splinepiece;
-            fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', rotated_piece.');
-            fprintf(fid, '%15.7g %15.7g\n', surfaces(i).splineEnds(j,1), surfaces(i).splineEnds(j,2));
+            surfaceStruct.splineCoeffs(j,:,:) = rotated_piece;
         end
-        fclose(fid);
+        surfaceStruct.splineEnds(:,:) = surfaces(i).splineEnds(:, :);
+        groupSurfaces(end+1) = surfaceStruct;
     end
+end
+size(groupElements)
+size(groupBoundaries)
+size(groupSurfaces)
+
+
+rmdir('./surfaces/', 's')
+mkdir('./surfaces/')
+for i=1:length(groupSurfaces)
+    element = groupSurfaces(i).elem + (k-1)*N_elem;
+    filename = sprintf('surfaces/surface%08d.txt', element);
+    fid = fopen(filename, "w");
+    for j = 1:4
+        splinepiece = zeros(3,4);
+        splinepiece(:, :) = groupSurfaces(i).splineCoeffs(j,:,:);
+        rotated_piece = R * splinepiece;
+        fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', rotated_piece.');
+        fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
+    end
+    fclose(fid);
 end
 exportREA("turbineInner.rea", groupElements, groupBoundaries)
 
