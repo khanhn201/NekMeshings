@@ -251,6 +251,7 @@ if R_downstream < 0
     end
 end
 
+% plotBC(elements, boundaries)
 
 % Replicate 2 more rotated copies
 N_elem = size(elements,1)

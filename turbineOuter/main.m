@@ -127,6 +127,7 @@ exportRE2("outer", elements, boundaries);
 % exportToVTK("inner.vtk", groupElements);
 
 N = size(elements,1);
-X = reshape(elements, [], 3); 
-Hexes = reshape(1:(N*8), N, 8);
-draw_Hexes_vtk(X,Hexes,[],'', -4)
+X = permute(elements, [2, 1, 3]);
+X = reshape(X, [], 3); 
+Hexes = reshape(1:(N*8), 8, N)';
+draw_Hexes_vtk(X,Hexes, boundaries,'')

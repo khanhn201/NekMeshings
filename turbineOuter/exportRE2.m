@@ -68,7 +68,7 @@ function exportRE2(filename, elements, boundaries)
     elseif tag == 4
       buf2(8) = strToDouble("O  ");
     elseif tag == 5
-      buf2(8) = strToDouble("s  ");
+      buf2(8) = strToDouble("SYM");
     else
       tag
     end
