@@ -121,5 +121,12 @@ elements(:, :, 1) = -elements(:, :, 2);
 elements(:, :, 2) = tmp;
 
 
-exportREA("turbineOuter.rea", elements, boundaries)
+% exportREA("turbineOuter.rea", elements, boundaries)
 % plotBC(elements, boundaries)
+exportRE2("outer", elements, boundaries);
+% exportToVTK("inner.vtk", groupElements);
+
+N = size(elements,1);
+X = reshape(elements, [], 3); 
+Hexes = reshape(1:(N*8), N, 8);
+draw_Hexes_vtk(X,Hexes,[],'', -4)

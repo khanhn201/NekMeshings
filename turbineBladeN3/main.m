@@ -65,9 +65,10 @@ end
 disp("connect slices")
 elements = [];
 boundaries = [];
-surfaces = struct('elem', {}, 'splineCoeffs', {}, 'splineEnds', {});
+surfaces = struct('elem', {}, 'face', {}, 'splineCoeffs', {}, 'splineEnds', {});
 [numSlices, numElements, numVertices, dim] = size(sliceElements);
 for k = 1:(numSlices - 1)
+    k
 % for k = 1:1
     count_wall = 0;
     for elem = 1:numElements
@@ -119,6 +120,7 @@ for k = 1:(numSlices - 1)
                         surfaceStruct.splineEnds(2,:) = [spline2start, spline2end];
                         surfaceStruct.splineEnds(3,:) = [spline3start, spline3end];
                         surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
+                        surfaceStruct.face = 3;
                         surfaces(end+1) = surfaceStruct;
                     end
                 end
@@ -199,7 +201,9 @@ end
 
 % Extends downstream
 if R_downstream < 0
-    ys = linspace(R_downstream, R_b, k_downstream)(:);
+    r = (R_b / R_downstream)^(1 / (k_downstream - 1));  % common ratio
+    ys = R_downstream * r.^((0:k_downstream-1))(:);
+    % ys = linspace(R_downstream, R_b, k_downstream)(:);
     for k = 2:size(ys,1)
         y_prev = ys(k-1);
         y = ys(k);
@@ -250,42 +254,41 @@ end
 
 % Replicate 2 more rotated copies
 N_elem = size(elements,1)
-groupElements = elements;
-groupBoundaries = boundaries;
-groupSurfaces = struct('elem', {}, 'splineCoeffs', {}, 'splineEnds', {});
+groupElements = zeros(3 * N_elem, 8, 3);
+groupElements(1:N_elem,:,:) = elements;
+groupBoundaries = zeros(3 * size(boundaries,1), 3);
+groupBoundaries(1:size(boundaries,1), :) = boundaries;
+
+groupSurfaces = struct('elem', {}, 'face', {}, 'splineCoeffs', {}, 'splineEnds', {});
 for k=1:2
+    R = [cos(2*k*pi/3), 0, -sin(2*k*pi/3);
+         0,           1,            0;
+         sin(2*k*pi/3), 0, cos(2*k*pi/3)];
     for i=1:N_elem
-        R = [cos(2*k*pi/3), 0, -sin(2*k*pi/3);
-             0,           1,            0;
-             sin(2*k*pi/3), 0, cos(2*k*pi/3)];
         element = squeeze(elements(i, :, :));
-        for j=1:8
-            element(j, :) = (R*squeeze(element(j, :))')';
-        end
-        groupElements(end+1, :, :) = element;
+        rotated = (R * element')';
+        groupElements(k*N_elem + i, :, :) = rotated;
     end
-    for i=1:size(boundaries, 1)
-        boundary = boundaries(i, :);
-        boundary(1, 1) += k*N_elem;
-        groupBoundaries(end+1, :) = boundary;
-    end
+    offset = k * N_elem;
+    b_start = k * size(boundaries, 1) + 1;
+    b_end = (k+1) * size(boundaries, 1);
+    groupBoundaries(b_start:b_end, :) = boundaries;
+    groupBoundaries(b_start:b_end, 1) += offset;
 end
 for k=1:3
     R = [cos(2*(k-1)*pi/3), 0, -sin(2*(k-1)*pi/3);
          0,           1,            0;
          sin(2*(k-1)*pi/3), 0, cos(2*(k-1)*pi/3)];
+    offset = (k - 1) * N_elem;
     for i=1:length(surfaces)
-        element = surfaces(i).elem + (k-1)*N_elem;
-        surfaceStruct.elem = element;
-        surfaceStruct.splineCoeffs = zeros(4, 3, 4);
+        surfaceStruct.elem = surfaces(i).elem + offset;
+        surfaceStruct.face = surfaces(i).face;
+        surfaceStruct.splineEnds = surfaces(i).splineEnds;
+        coeffs = surfaces(i).splineCoeffs;
         for j = 1:4
-            splinepiece = zeros(3,4);
-            splinepiece(:, :) = surfaces(i).splineCoeffs(j,:,:);
-            rotated_piece = R * splinepiece;
-            surfaceStruct.splineCoeffs(j,:,:) = rotated_piece;
+           surfaceStruct.splineCoeffs(j,:,:) = R * squeeze(coeffs(j,:,:)); 
         end
-        surfaceStruct.splineEnds(:,:) = surfaces(i).splineEnds(:, :);
-        groupSurfaces(end+1) = surfaceStruct;
+        groupSurfaces((k-1)*length(surfaces) + i) = surfaceStruct;
     end
 end
 size(groupElements)
@@ -293,21 +296,44 @@ size(groupBoundaries)
 size(groupSurfaces)
 
 
-rmdir('./surfaces/', 's')
-mkdir('./surfaces/')
-for i=1:length(groupSurfaces)
-    element = groupSurfaces(i).elem + (k-1)*N_elem;
-    filename = sprintf('surfaces/surface%08d.txt', element);
-    fid = fopen(filename, "w");
-    for j = 1:4
-        splinepiece = zeros(3,4);
-        splinepiece(:, :) = groupSurfaces(i).splineCoeffs(j,:,:);
-        rotated_piece = R * splinepiece;
-        fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', rotated_piece.');
-        fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
-    end
-    fclose(fid);
-end
-exportREA("turbineInner.rea", groupElements, groupBoundaries)
+% rmdir('./surfaces/', 's')
+% mkdir('./surfaces/')
+% for i=1:length(groupSurfaces)
+%     element = groupSurfaces(i).elem;
+%     filename = sprintf('surfaces/surface%08d.txt', element);
+%     fid = fopen(filename, "w");
+%     for j = 1:4
+%         for k = 1:3
+%             fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', groupSurfaces(i).splineCoeffs(j,k,:));
+%         end
+%         fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
+%     end
+%     fclose(fid);
+% end
 
+% fid = fopen('all_surfaces.txt', 'w');
+% for i = 1:length(groupSurfaces)
+%     element = groupSurfaces(i).elem;
+%     fprintf(fid, 'ELEMENT %d\n', element);  % Optional header for each element
+%     for j = 1:4
+%         for k = 1:3
+%             fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', groupSurfaces(i).splineCoeffs(j,k,:));
+%         end
+%         fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
+%     end
+%
+%     fprintf(fid, '\n');  % Optional spacing between elements
+% end
+% fclose(fid);
+
+exportSSURF("inner", groupSurfaces);
+% exportREA("turbineInner.rea", groupElements, groupBoundaries)
+exportRE2("inner", groupElements, groupBoundaries);
+% exportToVTK("inner.vtk", groupElements);
+
+N = size(groupElements,1);
+X = permute(groupElements, [2, 1, 3]);
+X = reshape(X, [], 3); 
+Hexes = reshape(1:(N*8), 8, N)';
+draw_Hexes_vtk(X,Hexes, groupBoundaries,'')
 % plotBC(groupElements, groupBoundaries)

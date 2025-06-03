@@ -29,9 +29,9 @@ R_upstream = 5000
 n_segs = 8;
 k_inner = 18;
 k_outer = 12;
-k_upstream = 20;
-k_downstream = 35;
-k_blade = 8;
+k_upstream = 12;
+k_downstream = 20;
+k_blade = 20;
 
 mult = 1.2;
 delta_inner = 0.4;
@@ -41,12 +41,12 @@ Ra = 12; % Inner square width (from -1250 to 1250)
 
 % Turbine Blade region
 R_t = 4.6; % Bounding rect top
-R_b = -4.6; % Bounding rect bottom (z from R_b to R_t)
-R_x = 67; % End cap position (-R_x and R_x)
+R_b = -78; % Bounding rect bottom (z from R_b to R_t)
+R_x = 73; % End cap position (-R_x and R_x)
 
 % Farfield
 R_far_top = 150
 R_far_bottom = -150
 R_far_horizontal = 150
-R_downstream = -200
-R_upstream = 80
+R_downstream = -300
+R_upstream = 100

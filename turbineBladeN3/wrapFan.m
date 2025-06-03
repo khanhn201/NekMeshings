@@ -9,7 +9,7 @@ function [elements, boundaries] = wrapFan(zs)
     r_square = zs(2);
     r_cir = zs(end);
     pd1 = [-r_square*cos(- pi/6); 0; r_square*sin(- pi/6)]';
-    pd2 = [-r_square*cos(pi/3 - pi/6); 0; r_square*sin(pi/3 - pi/6)]';
+    pd2 = [-r_square*cos(pi/3 - pi/6); 0; r_square*sin(pi/3 - pi/6)]'*2;
     pd3 = [-r_square*cos(2*pi/3 - pi/6); 0; r_square*sin(2*pi/3 - pi/6)]';
 
     function point=bottom_curve(u)
