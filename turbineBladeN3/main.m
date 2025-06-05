@@ -169,7 +169,7 @@ end
 zs = squeeze(zs);
 zs = zs(:);
 % xs = [xs; R_end_caps'];
-[cylElements, cylBoundaries] = wrapFan(zs);
+[cylElements, cylBoundaries] = wrapFanDiamond(zs);
 config
 ys = linspace(R_b, R_t, k_inner*2 + 1)(:);
 for k = 2:size(ys,1)
