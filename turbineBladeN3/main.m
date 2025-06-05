@@ -1,6 +1,6 @@
 % Mesh slices
 % slicesCoord = readSlices('iea15.mat');
-slicesCoord = readSlices('nrel5mw.mat');
+slicesCoord = readSlices('nrel5mw2.mat');
 config
 zss = slicesCoord(:, 1, 3);
 zs = linspace(z_shift, zss(end), n_slices);
