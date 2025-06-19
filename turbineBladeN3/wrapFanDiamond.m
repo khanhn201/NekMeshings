@@ -21,6 +21,7 @@ function [elements, boundaries] = wrapFanDiamond(zs)
     theta = cos(pi * km / (2*kh-2));
     theta = 1-(theta + 1)/2;
     fv = theta;
+    fu = (zs(kh:end) - zs(kh))/(zs(end) - zs(kh));
     theta = (-pi/6) + (2*pi/3) * theta;
 
 
@@ -34,7 +35,7 @@ function [elements, boundaries] = wrapFanDiamond(zs)
     v2 = [-r_max * cos(theta); 
            zeros(1, 2*kh-1); 
           r_max * sin(theta)]';
-    [elements1, boundaries1] = meshQuad(u1, u2, v1, v2, 3, 0, fv);
+    [elements1, boundaries1] = meshQuad(u1, u2, v1, v2, 3, fu, fv);
 
     for elem=1:size(elements1,1)
         elements(end+1, :, :) = elements1(elem, :, :);

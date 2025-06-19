@@ -4,7 +4,7 @@ n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 
 k_inner = 5;
 k_outer = 10;
-k_cyl = 15;
+k_cyl = 12;
 k_downstream = 15;
 mult = 1.3;
 first_layer_thickness = 0.02;
@@ -25,7 +25,7 @@ R_b = -5; % Bounding rect bottom (z from R_b to R_t)
 R_downstream = -80;
 % R_downstream = 0;
 
-R_end_caps = [61.6, 61.8, 62.5, 64, 67, 70, 75]; % End cap position (-R_x and R_x)
+R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 76]; % End cap position (-R_x and R_x)
 
 
 
