@@ -239,8 +239,16 @@ function [elements,boundaries, pp_coarse] = meshHub()
     % for m=1:ny
     % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
     % end
+    % Original X, Y of size (nx, ny)
+    X_mid = 0.5 * (X(:,1) + X(:,2));
+    Y_mid = 0.5 * (Y(:,1) + Y(:,2));
+
+    % Insert the midpoint layer between j=1 and j=2
+    X = [X(:,1), X_mid(:,:), X(:,2:end)];
+    Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
+
     for i = 1:nx
-    for j = 2:ny
+    for j = 2:ny+1
         inext = i + 1;
         if i == nx
             inext = 1;
@@ -249,22 +257,22 @@ function [elements,boundaries, pp_coarse] = meshHub()
         p2 = [X(i,j),       Y(i,j), z];
         p3 = [X(i,j-1),     Y(i,j-1), z];
         p4 = [X(inext,j-1), Y(inext,j-1), z];
-        if j == 2
-            % Split first layer
-            element1 = zeros(4,3);
-            element1(1,:) = p1;
-            element1(2,:) = p2;
-            element1(3,:) = (p2+p3)/2;
-            element1(4,:) = (p4+p1)/2;
-            elements(end+1, :, :) = element1;
-
-            element2 = zeros(4,3);
-            element2(1,:) = (p4+p1)/2;
-            element2(2,:) = (p2+p3)/2;
-            element2(3,:) = p3;
-            element2(4,:) = p4;
-            elements(end+1, :, :) = element2;
-        else
+        % if j == 2
+        %     % Split first layer
+        %     element1 = zeros(4,3);
+        %     element1(1,:) = p1;
+        %     element1(2,:) = p2;
+        %     element1(3,:) = (p2+p3)/2;
+        %     element1(4,:) = (p4+p1)/2;
+        %     elements(end+1, :, :) = element1;
+        %
+        %     element2 = zeros(4,3);
+        %     element2(1,:) = (p4+p1)/2;
+        %     element2(2,:) = (p2+p3)/2;
+        %     element2(3,:) = p3;
+        %     element2(4,:) = p4;
+        %     elements(end+1, :, :) = element2;
+        % else
             % Regular element
             element = zeros(4,3);
             element(1,:) = p1;
@@ -272,7 +280,7 @@ function [elements,boundaries, pp_coarse] = meshHub()
             element(3,:) = p3;
             element(4,:) = p4;
             elements(end+1, :, :) = element;
-        end
+        % end
 
         if j == ny
             if i > k_inner && i < k_inner + n_top + 3

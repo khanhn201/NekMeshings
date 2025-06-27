@@ -114,11 +114,14 @@ function [elements,boundaries] = meshInnerAsym(pp, arc_length)
         elements(end+1, :, :) = element;
     end
     checkCounterClockwise(elements)
+    boundaries_coords = ppval(pp, s_fine)';
+    size(boundaries_coords)
+    elements = relaxQuadMesh(elements, boundaries_coords, 1000);
 end
 
 function p4 = findBisectNode(p1, p2, p3)
     % Vectors defining the plane
-    p4 = p1 + 2.2/4*(p2 - 2*p1 + p3);
+    p4 = p1 + 2.25/4*(p2 - 2*p1 + p3);
 end
 % function p4 = findBisectNode(p1, p2, p3)
 %     % Vectors defining the plane

@@ -21,7 +21,7 @@ for i = 1:n_slices
     slice = squeeze(slicesCoord(i, :, :));
     slice(:, 3) = slice(1, 3);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
+    [elements, boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
 
     z = slice(1,3);
     % [elements] = smoothMesh(elements, boundaries);
@@ -33,17 +33,17 @@ for i = 1:n_slices
     endcap_slice = slice;
 end
 % End cap outer
-for j = 1:length(R_end_caps)
-    slice = endcap_slice;
-    R_x = R_end_caps(j);
-    slice(:,3) = R_x;
-    [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
-    [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
-    sliceElements(end+1, :, :, :) = elements;
-    sliceBoundaries = boundaries;
-    zs(end+1) = R_x;
-    % sliceSplines{size(sliceElements,1)} = pp_coarse;
-end
+% for j = 1:length(R_end_caps)
+%     slice = endcap_slice;
+%     R_x = R_end_caps(j);
+%     slice(:,3) = R_x;
+%     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
+%     [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
+%     sliceElements(end+1, :, :, :) = elements;
+%     sliceBoundaries = boundaries;
+%     zs(end+1) = R_x;
+%     % sliceSplines{size(sliceElements,1)} = pp_coarse;
+% end
 
 % Add connecting splines
 connectingSplines = {};
@@ -60,6 +60,8 @@ for i = 1:size(sliceSplines{1}.breaks, 2)
 end
 % plotSplines
 % asdfasf(sadfasdf)
+
+
 
 % Connect slices
 disp("connect slices")
@@ -82,7 +84,7 @@ for k = 1:(numSlices - 1)
         if isBoundary
             tag = sliceBoundaries(idx, 2);
             if tag == 1
-                if k < (numSlices - length(R_end_caps))
+                if k < numSlices
                     spline1 = sliceSplines{k};
                     spline3 = sliceSplines{k+1};
                     boundaries(end+1, :) = [size(elements,1); 3; 1];
@@ -132,38 +134,104 @@ for k = 1:(numSlices - 1)
                 boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
-        if k == numSlices - 1
+        % if k == numSlices - 1
+        %     boundaries(end+1, :) = [size(elements,1); 6; 3];
+        % end
+    end
+end
+
+
+
+layer_count = size(X, 2);
+layer_size = size(X, 1);
+z = z(end);
+Xmod = X(:, :);
+Ymod = Y(:, :);
+Xmod(1, 1:end-1) = (Xmod(1, 1:end-1) + Xmod(1, 2:end))/2;
+Ymod(1, 1:end-1) = (Ymod(1, 1:end-1) + Ymod(1, 2:end))/2;
+Xmod(layer_size/2+1, 1:end-1) = (Xmod(layer_size/2+1, 1:end-1) + Xmod(layer_size/2+1, 2:end))/2;
+Ymod(layer_size/2+1, 1:end-1) = (Ymod(layer_size/2+1, 1:end-1) + Ymod(layer_size/2+1, 2:end))/2;
+
+z_diag = [z+first_layer_thickness];
+for j = 2:layer_count
+    m = 1.9^(j-1)*first_layer_thickness;
+    mp = 1.9^(j-2)*first_layer_thickness;
+    for i = 1:layer_size
+        inext = i + 1;
+        if i == layer_size
+            inext = 1;
+        end
+        element = zeros(8, 3);
+        element(1,:) = [X(inext,j),   Y(inext,j), z];
+        element(2,:) = [X(i,j),       Y(i,j), z];
+        element(3,:) = [X(i,j-1),     Y(i,j-1), z];
+        element(4,:) = [X(inext,j-1), Y(inext,j-1), z];
+
+
+        element(5,:) = [Xmod(inext,j),   Ymod(inext,j), z+m];
+        element(6,:) = [Xmod(i,j),       Ymod(i,j), z+m];
+        element(7,:) = [Xmod(i,j-1),     Ymod(i,j-1), z+mp];
+        element(8,:) = [Xmod(inext,j-1), Ymod(inext,j-1), z+mp];
+        if j==layer_count
+            element(5,:) = [Xmod(inext,j),   Ymod(inext,j), z+mp];
+            element(6,:) = [Xmod(i,j),       Ymod(i,j), z+mp];
+        end
+        checkLeftHanded(element);
+        elements(end+1, :, :) = element;
+
+        if j==layer_count
             boundaries(end+1, :) = [size(elements,1); 6; 3];
+            if i >= k_outer -2 && i < k_outer + n_top
+                boundaries(end+1, :) = [size(elements,1); 1; 2];
+            end
+            if i >= n_top + 2*k_outer + 2 && i <=  2*n_top + 2*k_outer + 3
+                boundaries(end+1, :) = [size(elements,1); 1; 4];
+            end
         end
     end
+    z_diag(end+1) = z+m;
 end
 
 
 % Add end caps inner
 [pp, arc_length, arc_length_at_max_y] = fitSpline(endcap_slice);
-[elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length);
-for j = 1:length(R_end_caps)
-    R_x = R_end_caps(j);
+[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
+inner_size = size(elementsInner, 1);
+elementsInner = [elementsInner; first_layer];
+
+for j = 1:layer_count-1
+% for j = 1:1
+    p_coord = [X(:, j), Y(:, j), z*ones(layer_size,1)];
+    if j > 1
+        p_coord = [Xmod(:, j-1), Ymod(:, j-1), z_diag(j-1)*ones(layer_size,1)];
+    end
+    ux = solveLaplace(elementsInner, p_coord, Xmod(:,j)-p_coord(:,1));
+    uy = solveLaplace(elementsInner, p_coord, Ymod(:,j)-p_coord(:,2));
+    elementsInnerNext = elementsInner;
+    elementsInnerNext(:, :, 1) += ux;
+    elementsInnerNext(:, :, 2) += uy;
+    elementsInnerNext(:, :, 3) = z_diag(j);
+    p_coord = [Xmod(:, j), Ymod(:, j), z_diag(j)*ones(layer_size,1)];
+    elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 500);
+
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
-        layer_k1 = squeeze(elementsInner(elem,:, :)); 
-        if j > 1
-            layer_k(:,3) = R_prev;
-        end
-        layer_k1(:,3) = R_x;
+        layer_k1 = squeeze(elementsInnerNext(elem,:, :)); 
+
         element = [layer_k; layer_k1]; % 8 x 3
         checkLeftHanded(element);
 
         elements(end+1, :, :) = element;
-        if j == 1
+        if j == 1 && elem <= inner_size
             boundaries(end+1, :) = [size(elements,1); 5; 1];
         end
-        if j == length(R_end_caps)
+        if j == layer_count-1
             boundaries(end+1, :) = [size(elements,1); 6; 3];
         end
     end
-    R_prev = R_x;
+    elementsInner = elementsInnerNext;
 end
+zs(end+1) = z_diag(end-1);
 
 % Wrap cylinder
 zs = squeeze(zs);
@@ -327,6 +395,7 @@ size(groupSurfaces)
 % end
 % fclose(fid);
 
+zs(end)
 exportSSURF("inner", groupSurfaces);
 % exportREA("turbineInner.rea", groupElements, groupBoundaries)
 exportRE2("inner", groupElements, groupBoundaries);

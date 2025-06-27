@@ -4,10 +4,10 @@ n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 
 k_inner = 5;
 k_outer = 10;
-k_cyl = 12;
+k_cyl = 10;
 k_downstream = 15;
 mult = 1.3;
-first_layer_thickness = 0.02;
+first_layer_thickness = 0.03;
 delta_inner = 0.2;
 diamond_mult = 1.5;
 
@@ -22,8 +22,8 @@ n_smooth = 100;
 R_a = 5; % Bounding rect length in y (y from -R_a to R_a)
 R_t = 5; % Bounding rect top
 R_b = -5; % Bounding rect bottom (z from R_b to R_t)
-R_downstream = -80;
-% R_downstream = 0;
+% R_downstream = -80;
+R_downstream = 0;
 
 R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 76]; % End cap position (-R_x and R_x)
 
@@ -31,29 +31,29 @@ R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 
 
 
 % Coarse
-% n_top = 4; % Need to be even to match the hub
-% n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
-%
-% k_inner = 3;
-% k_outer = 5;
-% k_cyl = 10;
-% k_downstream = 7;
-% mult = 1.3;
-% first_layer_thickness = 0.1;
-% delta_inner = 0.2;
-% diamond_mult = 1.5;
-%
-% % beta % spacing along airfoil;
-% hub_radius = 1.78;
-% z_shift = 5;
-%
-% slice_spacing = 2;
-% n_slices = 40;
-% n_smooth = 100;
-%
-% R_a = 5; % Bounding rect length in y (y from -R_a to R_a)
-% R_t = 5; % Bounding rect top
-% R_b = -5; % Bounding rect bottom (z from R_b to R_t)
-% R_downstream = -80;
-% % R_downstream = 0;
-% R_end_caps = [61.6, 63, 66, 70, 75]; % End cap position (-R_x and R_x)
+n_top = 8; % Need to be even to match the hub
+n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
+
+k_inner = 5;
+k_outer = 8;
+k_cyl = 10;
+k_downstream = 7;
+mult = 1.3;
+first_layer_thickness = 0.05;
+delta_inner = 0.2;
+diamond_mult = 1.5;
+
+% beta % spacing along airfoil;
+hub_radius = 1.78;
+z_shift = 5;
+
+slice_spacing = 2;
+n_slices = 40;
+n_smooth = 100;
+
+R_a = 5; % Bounding rect length in y (y from -R_a to R_a)
+R_t = 5; % Bounding rect top
+R_b = -5; % Bounding rect bottom (z from R_b to R_t)
+R_downstream = -80;
+R_downstream = 0;
+R_end_caps = [61.6, 63, 66, 70, 75]; % End cap position (-R_x and R_x)

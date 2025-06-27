@@ -18,7 +18,7 @@ function plotElements(elements, boundaries)
         % else
         %     plot(y, z, 'k-', 'LineWidth', 0.5);
         % end
-        plot(x, z, 'k-', 'LineWidth', 0.5);
+        plot(x, y, 'k-', 'LineWidth', 0.5);
         
         centroid_x = mean(x(1:end-1));  % exclude the repeated first point
         centroid_y = mean(y(1:end-1));

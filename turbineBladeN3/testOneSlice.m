@@ -1,10 +1,10 @@
-slicesCoord = readSlices('nrel5mw.mat');
+slicesCoord = readSlices('nrel5mw2.mat');
 slice = squeeze(slicesCoord(end, :, :));
 [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
 [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
-[elementsInner, boundariesInner] = meshInnerAsym(pp, arc_length);
+[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
 elements = [elements; elementsInner;];
-% plotElements(elements, []);
+plotElements(elementsInner, []);
 [elements, boundaries, pp_coarse] = meshHub();
 % plotElementsSym(elements, []);
 

@@ -1,5 +1,5 @@
 
-function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y)
+function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y)
     config
     nx=2*n_top + 4*k_inner + 4;
     ny=k_outer;
@@ -120,6 +120,7 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
         boundaries(end+1, :) = [size(elements, 1); 1;];
     end
 
+    first_layer = elements;
     all_points = layer_next;
 
 
@@ -213,9 +214,15 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
     % for m=1:ny
     % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
     % end
+    X_mid = 0.5 * (X(:,1) + X(:,2));
+    Y_mid = 0.5 * (Y(:,1) + Y(:,2));
+
+    % Insert the midpoint layer between j=1 and j=2
+    X = [X(:,1), X_mid(:,:), X(:,2:end)];
+    Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
 
     for i = 1:nx
-    for j = 2:ny
+    for j = 2:ny+1
         inext = i + 1;
         if i == nx
             inext = 1;
@@ -224,32 +231,14 @@ function [elements,boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, ar
         p2 = [X(i,j),       Y(i,j), z];
         p3 = [X(i,j-1),     Y(i,j-1), z];
         p4 = [X(inext,j-1), Y(inext,j-1), z];
-        if j == 2
-            % Split first layer
-            element1 = zeros(4,3);
-            element1(1,:) = p1;
-            element1(2,:) = p2;
-            element1(3,:) = (p2+p3)/2;
-            element1(4,:) = (p4+p1)/2;
-            elements(end+1, :, :) = element1;
+        element = zeros(4,3);
+        element(1,:) = p1;
+        element(2,:) = p2;
+        element(3,:) = p3;
+        element(4,:) = p4;
+        elements(end+1, :, :) = element;
 
-            element2 = zeros(4,3);
-            element2(1,:) = (p4+p1)/2;
-            element2(2,:) = (p2+p3)/2;
-            element2(3,:) = p3;
-            element2(4,:) = p4;
-            elements(end+1, :, :) = element2;
-        else
-            % Regular element
-            element = zeros(4,3);
-            element(1,:) = p1;
-            element(2,:) = p2;
-            element(3,:) = p3;
-            element(4,:) = p4;
-            elements(end+1, :, :) = element;
-        end
-
-        if j == ny
+        if j == ny+1
             if i > k_inner && i < k_inner + n_top + 3
                 boundaries(end+1, :) = [size(elements, 1); 2;];
             end
