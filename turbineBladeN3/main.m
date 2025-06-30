@@ -401,6 +401,7 @@ exportSSURF("inner", groupSurfaces);
 exportRE2("inner", groupElements, groupBoundaries);
 % exportToVTK("inner.vtk", groupElements);
 
+% groupElements(:, :, :) = groupElements(:, :, :)/100;
 N = size(groupElements,1);
 X = permute(groupElements, [2, 1, 3]);
 X = reshape(X, [], 3); 

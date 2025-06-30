@@ -42,7 +42,7 @@ Ra = 12; % Inner square width (from -1250 to 1250)
 % Turbine Blade region
 R_t = 4.6; % Bounding rect top
 R_b = -4.6; % Bounding rect bottom (z from R_b to R_t)
-R_x = 73; % End cap position (-R_x and R_x)
+R_x = 65; % End cap position (-R_x and R_x)
 
 % Farfield
 R_far_top = 150

@@ -7,3 +7,6 @@ __pycache__
 *.msh
 *.his
 *.npy
+*.vtk
+*.ssurf
+*.mat
