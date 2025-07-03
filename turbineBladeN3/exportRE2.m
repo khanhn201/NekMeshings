@@ -70,7 +70,7 @@ function exportRE2(filename, elements, boundaries)
     elseif tag == 5
       buf2(8) = strToDouble("s  ");
     else
-      tag
+      tag;
     end
     fwrite(fid, buf2, 'double'); %x
   end

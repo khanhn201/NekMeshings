@@ -11,6 +11,7 @@ sliceElements = [];
 sliceBoundaries = [];
 sliceSplines = {};
 
+disp("mesh slices")
 [elements, boundaries, pp_coarse] = meshHub();
 z = 0;
 sliceElements(end+1, :, :, :) = elements;
@@ -18,6 +19,7 @@ sliceBoundaries = boundaries;
 zs(end+1) = 0;
 sliceSplines{size(sliceElements,1)} = pp_coarse;
 for i = 1:n_slices
+    i
     slice = squeeze(slicesCoord(i, :, :));
     slice(:, 3) = slice(1, 3);
     [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
@@ -69,93 +71,179 @@ elements = [];
 boundaries = [];
 surfaces = struct('elem', {}, 'face', {}, 'splineCoeffs', {}, 'splineEnds', {});
 [numSlices, numElements, numVertices, dim] = size(sliceElements);
+totalElements = (numSlices - 1) * numElements;
+
+
+elements = zeros(totalElements, 8, 3);
+boundaries = zeros(totalElements, 3);  % Overestimate
+surfaces(totalElements) = struct('elem', [], 'face', [], 'splineCoeffs', [], 'splineEnds', []);
+elemTags = zeros(numElements, 1);
+elemTags(sliceBoundaries(:,1)) = sliceBoundaries(:,2);
+
+
+v0 = reshape(sliceElements(1:end-1, :, :, :), [], 4, 3);  % (totalElements, 4, 3)
+v1 = reshape(sliceElements(2:end, :, :, :), [], 4, 3);
+elements = cat(2, v0, v1);  % (totalElements, 8, 3)
+
+elemID = reshape(1:totalElements, numSlices-1, numElements);  % (numSlices-1 x numElements)
+bndCount = 0;
+surfCount = 0;
+count_wall = 0;
+
 for k = 1:(numSlices - 1)
     k
-% for k = 1:1
+    
+    tag_k = elemTags;
+    elem_ids_k = elemID(k, :);
+
     count_wall = 0;
-    for elem = 1:numElements
-        vertices_layer_k = squeeze(sliceElements(k, elem, :, :)); % 4 x 3
-        vertices_layer_k1 = squeeze(sliceElements(k+1, elem, :, :)); % 4 x 3
-        element = [vertices_layer_k; vertices_layer_k1]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-        if isBoundary
-            tag = sliceBoundaries(idx, 2);
-            if tag == 1
-                if k < numSlices
-                    spline1 = sliceSplines{k};
-                    spline3 = sliceSplines{k+1};
-                    boundaries(end+1, :) = [size(elements,1); 3; 1];
-
-                    count_wall = count_wall + 1;
-                    spline2 = connectingSplines{count_wall+1};
-                    spline4 = connectingSplines{count_wall};
-
-                    j = count_wall;
-                    spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-                    spline1start = spline1.breaks(j);
-                    spline1end = spline1.breaks(j + 1);
-
-                    spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-                    spline3start = spline3.breaks(j);
-                    spline3end = spline3.breaks(j + 1);
-
-                    spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-                    spline2start = spline2.breaks(k);
-                    spline2end = spline2.breaks(k+1);
-
-                    spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-                    spline4start = spline4.breaks(k);
-                    spline4end = spline4.breaks(k+1);
-                    
-                    if k > 1
-                        surfaceStruct.elem = size(elements,1);
-                        surfaceStruct.splineCoeffs = zeros(4, 3, 4);
-                        surfaceStruct.splineCoeffs(1,:,:) = spline1piece;
-                        surfaceStruct.splineCoeffs(2,:,:) = spline2piece;
-                        surfaceStruct.splineCoeffs(3,:,:) = spline3piece;
-                        surfaceStruct.splineCoeffs(4,:,:) = spline4piece;
-                        surfaceStruct.splineEnds = zeros(4, 2);
-                        surfaceStruct.splineEnds(1,:) = [spline1start, spline1end];
-                        surfaceStruct.splineEnds(2,:) = [spline2start, spline2end];
-                        surfaceStruct.splineEnds(3,:) = [spline3start, spline3end];
-                        surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
-                        surfaceStruct.face = 3;
-                        surfaces(end+1) = surfaceStruct;
-                    end
-                end
-            end
-            if tag == 2 
-                boundaries(end+1, :) = [size(elements,1); 1; 2];
-            end
-            if tag == 3 && R_downstream == 0
-                boundaries(end+1, :) = [size(elements,1); 1; 4];
-            end
-        end
+    % for elem = 1:numElements
+    %     checkLeftHanded(element);
+    %     [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
+    %     if isBoundary
+    %         tag = sliceBoundaries(idx, 2);
+    %         if tag == 1
+    %             if k < numSlices
+    %                 spline1 = sliceSplines{k};
+    %                 spline3 = sliceSplines{k+1};
+    %                 boundaries(end+1, :) = [size(elements,1); 3; 1];
+    %
+    %                 count_wall = count_wall + 1;
+    %                 spline2 = connectingSplines{count_wall+1};
+    %                 spline4 = connectingSplines{count_wall};
+    %
+    %                 j = count_wall;
+    %                 spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+    %                 spline1start = spline1.breaks(j);
+    %                 spline1end = spline1.breaks(j + 1);
+    %
+    %                 spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
+    %                 spline3start = spline3.breaks(j);
+    %                 spline3end = spline3.breaks(j + 1);
+    %
+    %                 spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
+    %                 spline2start = spline2.breaks(k);
+    %                 spline2end = spline2.breaks(k+1);
+    %
+    %                 spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
+    %                 spline4start = spline4.breaks(k);
+    %                 spline4end = spline4.breaks(k+1);
+    %
+    %                 if k > 1
+    %                     surfaceStruct.elem = size(elements,1);
+    %                     surfaceStruct.splineCoeffs = zeros(4, 3, 4);
+    %                     surfaceStruct.splineCoeffs(1,:,:) = spline1piece;
+    %                     surfaceStruct.splineCoeffs(2,:,:) = spline2piece;
+    %                     surfaceStruct.splineCoeffs(3,:,:) = spline3piece;
+    %                     surfaceStruct.splineCoeffs(4,:,:) = spline4piece;
+    %                     surfaceStruct.splineEnds = zeros(4, 2);
+    %                     surfaceStruct.splineEnds(1,:) = [spline1start, spline1end];
+    %                     surfaceStruct.splineEnds(2,:) = [spline2start, spline2end];
+    %                     surfaceStruct.splineEnds(3,:) = [spline3start, spline3end];
+    %                     surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
+    %                     surfaceStruct.face = 3;
+    %                     surfaces(end+1) = surfaceStruct;
+    %                 end
+    %             end
+    %         end
+    %         if tag == 2 
+    %             boundaries(end+1, :) = [size(elements,1); 1; 2];
+    %         end
+    %         if tag == 3 && R_downstream == 0
+    %             boundaries(end+1, :) = [size(elements,1); 1; 4];
+    %         end
+    %     end
         % if k == numSlices - 1
         %     boundaries(end+1, :) = [size(elements,1); 6; 3];
         % end
+    % end
+
+    wall_idx = find(tag_k == 1);  % tag 1 → wall
+    if ~isempty(wall_idx)
+        n = numel(wall_idx);
+        bndRange = bndCount+1 : bndCount+n;
+        boundaries(bndRange, :) = [elem_ids_k(wall_idx)', 3*ones(n,1), ones(n,1)];
+        bndCount = bndCount + n;
+
+        if k > 1
+            spline1 = sliceSplines{k};
+            spline3 = sliceSplines{k+1};
+            for j = 1:n
+                elem_j = elem_ids_k(wall_idx(j));
+                count_wall = count_wall + 1;
+
+                spline2 = connectingSplines{count_wall+1};
+                spline4 = connectingSplines{count_wall};
+
+                surfaces(surfCount+1).elem = elem_j;
+                surfaces(surfCount+1).face = 3;
+                surfaces(surfCount+1).splineCoeffs = zeros(4, 3, 4);
+                surfaces(surfCount+1).splineCoeffs(1, :, :) = spline1.coefs((j-1)*3 + (1:3), :);
+                surfaces(surfCount+1).splineCoeffs(2, :, :) = spline2.coefs((k-1)*3 + (1:3), :);
+                surfaces(surfCount+1).splineCoeffs(3, :, :) = spline3.coefs((j-1)*3 + (1:3), :);
+                surfaces(surfCount+1).splineCoeffs(4, :, :) = spline4.coefs((k-1)*3 + (1:3), :);
+                surfaces(surfCount+1).splineEnds = [ ...
+                    spline1.breaks(j), spline1.breaks(j+1); ...
+                    spline2.breaks(k), spline2.breaks(k+1); ...
+                    spline3.breaks(j), spline3.breaks(j+1); ...
+                    spline4.breaks(k), spline4.breaks(k+1)];
+                surfCount = surfCount + 1;
+            end
+        end
+    end
+
+    inflow_idx = find(tag_k == 2);
+    if ~isempty(inflow_idx)
+        n = numel(inflow_idx);
+        bndRange = bndCount+1 : bndCount+n;
+        boundaries(bndRange, :) = [elem_ids_k(inflow_idx)', ones(n,1), 2*ones(n,1)];
+        bndCount = bndCount + n;
+    end
+
+    if R_downstream == 0
+        outflow_idx = find(tag_k == 3);
+        if ~isempty(outflow_idx)
+            n = numel(outflow_idx);
+            bndRange = bndCount+1 : bndCount+n;
+            boundaries(bndRange, :) = [elem_ids_k(outflow_idx)', ones(n,1), 4*ones(n,1)];
+            bndCount = bndCount + n;
+        end
     end
 end
 
+boundaries = boundaries(1:bndCount, :);
+surfaces = surfaces(1:surfCount);
 
+
+
+disp("capping ends")
 
 layer_count = size(X, 2);
 layer_size = size(X, 1);
 z = z(end);
 Xmod = X(:, :);
 Ymod = Y(:, :);
-Xmod(1, 1:end-1) = (Xmod(1, 1:end-1) + Xmod(1, 2:end))/2;
-Ymod(1, 1:end-1) = (Ymod(1, 1:end-1) + Ymod(1, 2:end))/2;
-Xmod(layer_size/2+1, 1:end-1) = (Xmod(layer_size/2+1, 1:end-1) + Xmod(layer_size/2+1, 2:end))/2;
-Ymod(layer_size/2+1, 1:end-1) = (Ymod(layer_size/2+1, 1:end-1) + Ymod(layer_size/2+1, 2:end))/2;
+factors = linspace(0.25, 1, ceil(k_inner/2));
+for i=1:ceil(k_inner/2)
+    factor = factors(i);
+    Xmod(i, 1:end-1) = factor*Xmod(i, 1:end-1) + (1-factor)*Xmod(i, 2:end);
+    Ymod(i, 1:end-1) = factor*Ymod(i, 1:end-1) + (1-factor)*Ymod(i, 2:end);
+    if i != 1
+        Xmod(end-i+2, 1:end-1) = factor*Xmod(end-i+2, 1:end-1) + (1-factor)*Xmod(end-i+2, 2:end);
+        Ymod(end-i+2, 1:end-1) = factor*Ymod(end-i+2, 1:end-1) + (1-factor)*Ymod(end-i+2, 2:end);
+    end
+    Xmod(layer_size/2+i, 1:end-1) = factor*Xmod(layer_size/2+i, 1:end-1) + (1-factor)*Xmod(layer_size/2+i, 2:end);
+    Ymod(layer_size/2+i, 1:end-1) = factor*Ymod(layer_size/2+i, 1:end-1) + (1-factor)*Ymod(layer_size/2+i, 2:end);
+    if i != 1
+        Xmod(layer_size/2-i+2, 1:end-1) = factor*Xmod(layer_size/2-i+2, 1:end-1) + (1-factor)*Xmod(layer_size/2-i+2, 2:end);
+        Ymod(layer_size/2-i+2, 1:end-1) = factor*Ymod(layer_size/2-i+2, 1:end-1) + (1-factor)*Ymod(layer_size/2-i+2, 2:end);
+    end
+end
 
 z_diag = [z+first_layer_thickness];
 for j = 2:layer_count
-    m = 1.9^(j-1)*first_layer_thickness;
-    mp = 1.9^(j-2)*first_layer_thickness;
+    m = first_layer_thickness + Xmod(1, 1) - Xmod(1, j);
+    mp = first_layer_thickness + Xmod(1, 1) - Xmod(1, j-1);
     for i = 1:layer_size
         inext = i + 1;
         if i == layer_size
@@ -181,10 +269,10 @@ for j = 2:layer_count
 
         if j==layer_count
             boundaries(end+1, :) = [size(elements,1); 6; 3];
-            if i >= k_outer -2 && i < k_outer + n_top
+            if i >= k_inner + 1 && i <= k_inner + n_top + 2
                 boundaries(end+1, :) = [size(elements,1); 1; 2];
             end
-            if i >= n_top + 2*k_outer + 2 && i <=  2*n_top + 2*k_outer + 3
+            if i >= n_top + 3*k_inner + 3 && i <=  2*n_top + 3*k_inner + 4
                 boundaries(end+1, :) = [size(elements,1); 1; 4];
             end
         end
@@ -193,6 +281,7 @@ for j = 2:layer_count
 end
 
 
+disp("capping ends inner")
 % Add end caps inner
 [pp, arc_length, arc_length_at_max_y] = fitSpline(endcap_slice);
 [elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
@@ -212,7 +301,7 @@ for j = 1:layer_count-1
     elementsInnerNext(:, :, 2) += uy;
     elementsInnerNext(:, :, 3) = z_diag(j);
     p_coord = [Xmod(:, j), Ymod(:, j), z_diag(j)*ones(layer_size,1)];
-    elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 500);
+    elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 50);
 
     for elem = 1:size(elementsInner, 1)
         layer_k = squeeze(elementsInner(elem,:, :)); 
@@ -233,6 +322,7 @@ for j = 1:layer_count-1
 end
 zs(end+1) = z_diag(end-1);
 
+disp("wrap cylinder")
 % Wrap cylinder
 zs = squeeze(zs);
 zs = zs(:);
@@ -240,31 +330,72 @@ zs = zs(:);
 [cylElements, cylBoundaries] = wrapFanDiamond(zs);
 config
 ys = linspace(R_b, R_t, k_inner*2 + 1)(:);
-for k = 2:size(ys,1)
+numElems = size(cylElements,1);
+numLayers = length(ys) - 1;
+layerk = reshape(cylElements, [numElems, 4, 3]);  % (N, 4, 3)
+layerk = cat(2, layerk, layerk);                  % (N, 8, 3)
+elements2 = zeros(numElems*numLayers, 8, 3);
+boundaries2 = [];
+
+% for k = 2:size(ys,1)
+%     y_prev = ys(k-1);
+%     y = ys(k);
+%     for elem = 1:size(cylElements,1)
+%         layerk = cylElements(elem, :, :);
+%         element = reshape(cat(2, layerk, layerk), 8, 3); % 8 x 3
+%         element(1:4, 2) = y;
+%         element(5:8, 2) = y_prev;
+%
+%         checkLeftHanded(element);
+%
+%         elements(end+1, :, :) = element;
+%         [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
+%         if isBoundary
+%             boundaries(end+1, :) = [size(elements,1); 1; 3];
+%         end
+%         if k == 2 && R_downstream == 0
+%             boundaries(end+1, :) = [size(elements,1); 6; 4];
+%         end
+%         if k == size(ys,1)
+%             boundaries(end+1, :) = [size(elements,1); 5; 2];
+%         end
+%     end
+% end
+
+
+for k = 2:length(ys)
     y_prev = ys(k-1);
     y = ys(k);
-    for elem = 1:size(cylElements,1)
-        cylElemk = squeeze(cylElements(elem, :, :));
-        cylElemk(:, 2) = y_prev;
-        cylElemk1 = squeeze(cylElements(elem, :, :));
-        cylElemk1(:, 2) = y;
-        element = [cylElemk1; cylElemk];
+    idx = (k-2)*numElems + (1:numElems);
 
-        checkLeftHanded(element);
+    % Assign the Y-coordinate values
+    layerk_temp = layerk;
+    layerk_temp(:,1:4,2) = y;
+    layerk_temp(:,5:8,2) = y_prev;
 
-        elements(end+1, :, :) = element;
-        [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
-        if isBoundary
-            boundaries(end+1, :) = [size(elements,1); 1; 3];
-        end
-        if k == 2 && R_downstream == 0
-            boundaries(end+1, :) = [size(elements,1); 6; 4];
-        end
-        if k == size(ys,1)
-            boundaries(end+1, :) = [size(elements,1); 5; 2];
-        end
+    % Save to elements
+    elements2(idx, :, :) = layerk_temp;
+
+    [isBoundary, loc] = ismember((1:numElems)', cylBoundaries(:,1));
+    if any(isBoundary)
+        boundaries2 = [boundaries2;
+                      [idx(isBoundary)', repmat(1, sum(isBoundary), 1), repmat(3, sum(isBoundary), 1)]];
+    end
+    if k == 2 && R_downstream == 0
+        boundaries2 = [boundaries2;
+                      [idx', repmat(6, numElems, 1), repmat(4, numElems, 1)]];
+    end
+    if k == length(ys)
+        boundaries2 = [boundaries2;
+                      [idx', repmat(5, numElems, 1), repmat(2, numElems, 1)]];
     end
 end
+
+boundaries2(:, 1) += size(elements, 1);
+elements = [elements; elements2];
+boundaries = [boundaries; boundaries2];
+
+
 % plotElements3D(elements)
 
 % Extends downstream
@@ -321,6 +452,7 @@ end
 
 % plotBC(elements, boundaries)
 
+disp("cloning")
 % Replicate 2 more rotated copies
 N_elem = size(elements,1)
 groupElements = zeros(3 * N_elem, 8, 3);

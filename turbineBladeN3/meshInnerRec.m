@@ -39,8 +39,8 @@ function [elements,boundaries] = meshInnerRec(pp, arc_length)
         p1 = all_points(i, :);
         p2 = all_points(i-1, :);
         p3 = all_points(i+1, :);
-        p4 = p1 - 0.04*findBisect(p1, p2, p3);
-        p5 = p2 - 0.04*findBisect(p2, all_points(i-2, :), p1);
+        p4 = p1 - 2*first_layer_thickness*findBisect(p1, p2, p3);
+        p5 = p2 - 2*first_layer_thickness*findBisect(p2, all_points(i-2, :), p1);
         all_points_sub(end+1, :) = p5;
         if i==tail_count
             k1 = p5;
@@ -145,7 +145,7 @@ function [elements,boundaries] = meshInnerRec(pp, arc_length)
     checkCounterClockwise(elements)
     boundaries_coords = ppval(pp, s_fine)';
     % size(boundaries_coords)
-    elements = relaxQuadMesh(elements, boundaries_coords, 500);
+    elements = relaxQuadMesh(elements, boundaries_coords, 50);
 end
 
 function p4 = findBisectNode(p1, p2, p3)

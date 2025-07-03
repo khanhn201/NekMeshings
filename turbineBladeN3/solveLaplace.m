@@ -16,6 +16,16 @@ function u_elem = solveLaplace(elements, p_coord, value)
     % Step 2: Build connectivity: elements as indices into unique_pts
     elem_conn = reshape(idx_map, [N, 4]);  % (N x 4)
 
+
+    alpha = 0;  % decay rate, tune this parameter
+    dist_to_boundary = zeros(total_pts,1);
+    for i = 1:total_pts
+        pt = unique_pts(i,:);
+        dists = sqrt(sum((p_coord - pt).^2, 2));
+        dist_to_boundary(i) = min(dists);
+    end
+    weights = exp(-alpha * dist_to_boundary);
+
     % Step 3: Map boundary coordinates to global indices
     P = size(p_coord, 1);
     boundary_idx = zeros(P,1);
@@ -57,6 +67,9 @@ function u_elem = solveLaplace(elements, p_coord, value)
                 dN_dxy = invJ' * [dN_dxi; dN_deta];
 
                 Ke = Ke + (dN_dxy' * dN_dxy) * detJ * w(i)*w(j);
+                % local_weights = weights(nodes); % (4,)
+                % w_avg = mean(local_weights);
+                % Ke = Ke + w_avg * (dN_dxy' * dN_dxy) * detJ * w(i)*w(j);
             end
         end
 
@@ -69,8 +82,8 @@ function u_elem = solveLaplace(elements, p_coord, value)
     fixed = boundary_idx;
     free = setdiff(1:total_pts, fixed);
 
-    b = b - A * u;
-    u(free) = A(free, free) \ b(free);
+    % b = b - A * u;
+    % u(free) = A(free, free) \ b(free);
     
     u_elem = reshape(u(idx_map), [N, 4]);
 end

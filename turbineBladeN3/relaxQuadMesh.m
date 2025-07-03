@@ -7,7 +7,7 @@ function relaxed_elements = relaxQuadMesh(elements, boundary_coords, max_iter)
 
     % Step 1: Flatten and get unique points
     all_pts = reshape(elements, [], 3);  % (4*N, 3)
-    [unique_pts, ~, idx_map] = uniquetol(all_pts,'ByRows',true);  % (P, 3)
+    [unique_pts, ~, idx_map] = uniquetol(all_pts, 1e-8,'ByRows',true);  % (P, 3)
     P = size(unique_pts, 1);
 
     % Step 2: Build element-to-node mapping
@@ -30,12 +30,22 @@ function relaxed_elements = relaxQuadMesh(elements, boundary_coords, max_iter)
     adj = cell(P,1);
     for e = 1:N
         nodes = elem_conn(e,:);
+        % for i = 1:4
+        % for j = 1:3
+        %     ni = nodes(i);
+        %     nj = nodes(mod(i+j-1,4)+1);  % cyclic
+        %     adj{ni}(end+1) = nj;
+        %     adj{nj}(end+1) = ni;
+        % end
+        % end
         for i = 1:4
             ni = nodes(i);
-            nj = nodes(mod(i,4)+1);  % cyclic
+            nj = nodes(mod(i,4)+1);   % next neighbor
+            nk = nodes(mod(i-2,4)+1); % previous neighbor
             adj{ni}(end+1) = nj;
-            adj{nj}(end+1) = ni;
+            adj{ni}(end+1) = nk;
         end
+
     end
 
     % Step 5: Laplacian smoothing
@@ -46,15 +56,22 @@ function relaxed_elements = relaxQuadMesh(elements, boundary_coords, max_iter)
         for i = 1:P
             if is_fixed(i), continue; end  % skip boundary nodes
             neighbors = unique(adj{i});
-            new_pts(i,:) = mean(relaxed_pts(neighbors,:), 1);
+            new_pts(i,:) = mean(new_pts(neighbors,:), 1);
         end
+        % relaxed_pts = 0.5*relaxed_pts + 0.5*new_pts;
         relaxed_pts = new_pts;
+        % Plot mesh at current iteration
+        % figure(1); clf; hold on; axis equal;
+        % for e = 1:N
+        %     pts = relaxed_pts(elem_conn(e,:), :);  % 4x3
+        %     fill(pts([1:4 1],1), pts([1:4 1],2), [0.8 0.9 1], 'EdgeColor', 'k');
+        % end
+        % title(['Relaxation Iteration ', num2str(iter)]);
+        % xlabel('X'); ylabel('Y');
+        % drawnow;
     end
 
     % Step 6: Map smoothed points back to elements
-    relaxed_elements = elements;
-    for k = 1:numel(idx_map)
-        relaxed_elements(k) = relaxed_pts(idx_map(k));
-    end
-    relaxed_elements = reshape(relaxed_elements, size(elements));
+    
+    relaxed_elements = reshape(relaxed_pts(idx_map, :), size(elements));
 end
