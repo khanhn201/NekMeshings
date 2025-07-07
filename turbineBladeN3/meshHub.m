@@ -246,19 +246,23 @@ function [elements,boundaries, pp_coarse] = meshHub()
     % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
     % end
 
+    X = [X_bl, X(:, 2:end)];
+    Y = [Y_bl, Y(:, 2:end)];
+
+
     % Enforce symmetry
-    for j = 1:ny
+    for j = 1:size(X, 2)
         X(k_inner + n_top/2 + 2, j) = 0;
         X(3*k_inner + n_top + n_bottom/2 + 4, j) = 0;
     end
     for i = 1:k_inner + n_top/2 + 1
-    for j = 1:ny
+    for j = 1:size(X, 2)
         X(i, j) = -X(2*k_inner + n_top - i + 4, j);
         Y(i, j) = Y(2*k_inner + n_top - i + 4, j);
     end
     end
     for i = 3*k_inner + n_top + n_bottom/2 + 5: size(X, 1)
-    for j = 1:ny
+    for j = 1:size(X, 2)
         X(i, j) = -X(6*k_inner + 2*n_top + n_bottom - i + 8, j);
         Y(i, j) = Y(6*k_inner + 2*n_top + n_bottom - i + 8, j);
     end
@@ -280,10 +284,6 @@ function [elements,boundaries, pp_coarse] = meshHub()
     % % Insert the midpoint layer between j=1 and j=2
     % X = [X(:,1), X_mid(:,:), X(:,2:end)];
     % Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
-
-    X = [X_bl, X(:, 2:end)];
-    Y = [Y_bl, Y(:, 2:end)];
-
     for i = 1:nx
     for j = 2:size(X, 2)
         inext = i + 1;

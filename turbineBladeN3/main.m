@@ -243,7 +243,7 @@ for j = 1:layer_count-1
     p_coord = [Xmod(:, j), Ymod(:, j), z_diag(j)*ones(layer_size,1)];
     elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 50);
 
-    
+
     numElems = size(elementsInner, 1);
     newElements = cat(2, elementsInner, elementsInnerNext);
     boundaryRows = [];
@@ -258,7 +258,7 @@ for j = 1:layer_count-1
         ids = size(elements,1) + (1:numElems)';
         boundaryRows = [boundaryRows; ids, 6*ones(numElems,1), 3*ones(numElems,1)];
     end
-    
+
     elements = cat(1, elements, newElements);
     boundaries = cat(1, boundaries, boundaryRows);
 
@@ -368,6 +368,12 @@ if R_downstream < 0
     end
 end
 
+
+for i=1:size(elements, 1)
+    checkLeftHanded(squeeze(elements(i, :, :)));
+end
+
+
 % plotBC(elements, boundaries)
 
 disp("cloning")
@@ -419,7 +425,6 @@ zs(end)
 exportSSURF("inner", groupSurfaces);
 % exportREA("turbineInner.rea", groupElements, groupBoundaries)
 exportRE2("inner", groupElements, groupBoundaries);
-% exportToVTK("inner.vtk", groupElements);
 
 % groupElements(:, :, :) = groupElements(:, :, :)/100;
 N = size(groupElements,1);
