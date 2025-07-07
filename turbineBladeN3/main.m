@@ -97,66 +97,6 @@ for k = 1:(numSlices - 1)
     elem_ids_k = elemID(k, :);
 
     count_wall = 0;
-    % for elem = 1:numElements
-    %     checkLeftHanded(element);
-    %     [isBoundary, idx] = ismember(elem, sliceBoundaries(:, 1));
-    %     if isBoundary
-    %         tag = sliceBoundaries(idx, 2);
-    %         if tag == 1
-    %             if k < numSlices
-    %                 spline1 = sliceSplines{k};
-    %                 spline3 = sliceSplines{k+1};
-    %                 boundaries(end+1, :) = [size(elements,1); 3; 1];
-    %
-    %                 count_wall = count_wall + 1;
-    %                 spline2 = connectingSplines{count_wall+1};
-    %                 spline4 = connectingSplines{count_wall};
-    %
-    %                 j = count_wall;
-    %                 spline1piece = spline1.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-    %                 spline1start = spline1.breaks(j);
-    %                 spline1end = spline1.breaks(j + 1);
-    %
-    %                 spline3piece = spline3.coefs((j-1)*3 + 1: (j-1)*3 + 3,:);
-    %                 spline3start = spline3.breaks(j);
-    %                 spline3end = spline3.breaks(j + 1);
-    %
-    %                 spline2piece = spline2.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-    %                 spline2start = spline2.breaks(k);
-    %                 spline2end = spline2.breaks(k+1);
-    %
-    %                 spline4piece = spline4.coefs((k-1)*3 + 1: (k-1)*3 + 3,:);
-    %                 spline4start = spline4.breaks(k);
-    %                 spline4end = spline4.breaks(k+1);
-    %
-    %                 if k > 1
-    %                     surfaceStruct.elem = size(elements,1);
-    %                     surfaceStruct.splineCoeffs = zeros(4, 3, 4);
-    %                     surfaceStruct.splineCoeffs(1,:,:) = spline1piece;
-    %                     surfaceStruct.splineCoeffs(2,:,:) = spline2piece;
-    %                     surfaceStruct.splineCoeffs(3,:,:) = spline3piece;
-    %                     surfaceStruct.splineCoeffs(4,:,:) = spline4piece;
-    %                     surfaceStruct.splineEnds = zeros(4, 2);
-    %                     surfaceStruct.splineEnds(1,:) = [spline1start, spline1end];
-    %                     surfaceStruct.splineEnds(2,:) = [spline2start, spline2end];
-    %                     surfaceStruct.splineEnds(3,:) = [spline3start, spline3end];
-    %                     surfaceStruct.splineEnds(4,:) = [spline4start, spline4end];
-    %                     surfaceStruct.face = 3;
-    %                     surfaces(end+1) = surfaceStruct;
-    %                 end
-    %             end
-    %         end
-    %         if tag == 2 
-    %             boundaries(end+1, :) = [size(elements,1); 1; 2];
-    %         end
-    %         if tag == 3 && R_downstream == 0
-    %             boundaries(end+1, :) = [size(elements,1); 1; 4];
-    %         end
-    %     end
-        % if k == numSlices - 1
-        %     boundaries(end+1, :) = [size(elements,1); 6; 3];
-        % end
-    % end
 
     wall_idx = find(tag_k == 1);  % tag 1 → wall
     if ~isempty(wall_idx)
@@ -322,22 +262,6 @@ for j = 1:layer_count-1
     elements = cat(1, elements, newElements);
     boundaries = cat(1, boundaries, boundaryRows);
 
-
-    % for elem = 1:size(elementsInner, 1)
-    %     layer_k = squeeze(elementsInner(elem,:, :)); 
-    %     layer_k1 = squeeze(elementsInnerNext(elem,:, :)); 
-    %
-    %     element = [layer_k; layer_k1]; % 8 x 3
-    %     checkLeftHanded(element);
-    %
-    %     elements(end+1, :, :) = element;
-    %     if j == 1 && elem <= inner_size
-    %         boundaries(end+1, :) = [size(elements,1); 5; 1];
-    %     end
-    %     if j == layer_count-1
-    %         boundaries(end+1, :) = [size(elements,1); 6; 3];
-    %     end
-    % end
     elementsInner = elementsInnerNext;
 end
 zs(end+1) = z_diag(end-1);
@@ -356,32 +280,6 @@ layerk = reshape(cylElements, [numElems, 4, 3]);  % (N, 4, 3)
 layerk = cat(2, layerk, layerk);                  % (N, 8, 3)
 elements2 = zeros(numElems*numLayers, 8, 3);
 boundaries2 = [];
-
-% for k = 2:size(ys,1)
-%     y_prev = ys(k-1);
-%     y = ys(k);
-%     for elem = 1:size(cylElements,1)
-%         layerk = cylElements(elem, :, :);
-%         element = reshape(cat(2, layerk, layerk), 8, 3); % 8 x 3
-%         element(1:4, 2) = y;
-%         element(5:8, 2) = y_prev;
-%
-%         checkLeftHanded(element);
-%
-%         elements(end+1, :, :) = element;
-%         [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
-%         if isBoundary
-%             boundaries(end+1, :) = [size(elements,1); 1; 3];
-%         end
-%         if k == 2 && R_downstream == 0
-%             boundaries(end+1, :) = [size(elements,1); 6; 4];
-%         end
-%         if k == size(ys,1)
-%             boundaries(end+1, :) = [size(elements,1); 5; 2];
-%         end
-%     end
-% end
-
 
 for k = 2:length(ys)
     y_prev = ys(k-1);
