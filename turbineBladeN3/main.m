@@ -303,21 +303,41 @@ for j = 1:layer_count-1
     p_coord = [Xmod(:, j), Ymod(:, j), z_diag(j)*ones(layer_size,1)];
     elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 50);
 
-    for elem = 1:size(elementsInner, 1)
-        layer_k = squeeze(elementsInner(elem,:, :)); 
-        layer_k1 = squeeze(elementsInnerNext(elem,:, :)); 
-
-        element = [layer_k; layer_k1]; % 8 x 3
-        checkLeftHanded(element);
-
-        elements(end+1, :, :) = element;
-        if j == 1 && elem <= inner_size
-            boundaries(end+1, :) = [size(elements,1); 5; 1];
-        end
-        if j == layer_count-1
-            boundaries(end+1, :) = [size(elements,1); 6; 3];
-        end
+    
+    numElems = size(elementsInner, 1);
+    newElements = cat(2, elementsInner, elementsInnerNext);
+    boundaryRows = [];
+    if j == 1
+        % Add [index; 5; 1] for the first inner_size elements
+        ids = size(elements,1) + (1:inner_size)';
+        boundaryRows = [ids, 5*ones(inner_size,1), ones(inner_size,1)];
     end
+
+    if j == layer_count - 1
+        % Add [index; 6; 3] for all elements in this layer
+        ids = size(elements,1) + (1:numElems)';
+        boundaryRows = [boundaryRows; ids, 6*ones(numElems,1), 3*ones(numElems,1)];
+    end
+    
+    elements = cat(1, elements, newElements);
+    boundaries = cat(1, boundaries, boundaryRows);
+
+
+    % for elem = 1:size(elementsInner, 1)
+    %     layer_k = squeeze(elementsInner(elem,:, :)); 
+    %     layer_k1 = squeeze(elementsInnerNext(elem,:, :)); 
+    %
+    %     element = [layer_k; layer_k1]; % 8 x 3
+    %     checkLeftHanded(element);
+    %
+    %     elements(end+1, :, :) = element;
+    %     if j == 1 && elem <= inner_size
+    %         boundaries(end+1, :) = [size(elements,1); 5; 1];
+    %     end
+    %     if j == layer_count-1
+    %         boundaries(end+1, :) = [size(elements,1); 6; 3];
+    %     end
+    % end
     elementsInner = elementsInnerNext;
 end
 zs(end+1) = z_diag(end-1);
@@ -496,36 +516,6 @@ size(groupElements)
 size(groupBoundaries)
 size(groupSurfaces)
 
-
-% rmdir('./surfaces/', 's')
-% mkdir('./surfaces/')
-% for i=1:length(groupSurfaces)
-%     element = groupSurfaces(i).elem;
-%     filename = sprintf('surfaces/surface%08d.txt', element);
-%     fid = fopen(filename, "w");
-%     for j = 1:4
-%         for k = 1:3
-%             fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', groupSurfaces(i).splineCoeffs(j,k,:));
-%         end
-%         fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
-%     end
-%     fclose(fid);
-% end
-
-% fid = fopen('all_surfaces.txt', 'w');
-% for i = 1:length(groupSurfaces)
-%     element = groupSurfaces(i).elem;
-%     fprintf(fid, 'ELEMENT %d\n', element);  % Optional header for each element
-%     for j = 1:4
-%         for k = 1:3
-%             fprintf(fid, '%15.7g %15.7g %15.7g %15.7g\n', groupSurfaces(i).splineCoeffs(j,k,:));
-%         end
-%         fprintf(fid, '%15.7g %15.7g\n', groupSurfaces(i).splineEnds(j,1), groupSurfaces(i).splineEnds(j,2));
-%     end
-%
-%     fprintf(fid, '\n');  % Optional spacing between elements
-% end
-% fclose(fid);
 
 zs(end)
 exportSSURF("inner", groupSurfaces);

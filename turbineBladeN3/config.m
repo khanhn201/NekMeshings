@@ -1,13 +1,16 @@
-n_top = 24; % Need to be even to match the hub
+n_top = 36; % Need to be even to match the hub
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 % n_leading = 3;
 
-k_inner = 16;
-k_outer = 40;
+k_inner = 18;
+k_outer = 10;
 k_cyl = 35;
 k_downstream = 15;
-mult = 1.3;
-first_layer_thickness = 0.005;
+
+k_bl = 35;
+mult = 1.08;
+first_layer_thickness = 0.01;
+
 delta_inner = 0.2;
 diamond_mult = 1.5;
 
@@ -19,9 +22,9 @@ slice_spacing = 2;
 n_slices = 120;
 n_smooth = 100;
 
-R_a = 4; % Bounding rect length in y (y from -R_a to R_a)
-R_t = 4; % Bounding rect top
-R_b = -4; % Bounding rect bottom (z from R_b to R_t)
+R_a = 5; % Bounding rect length in y (y from -R_a to R_a)
+R_t = 5; % Bounding rect top
+R_b = -5; % Bounding rect bottom (z from R_b to R_t)
 % R_downstream = -80;
 R_downstream = 0;
 
@@ -31,15 +34,19 @@ R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 
 
 
 % Coarse
-n_top = 24; % Need to be even to match the hub
+n_top = 18; % Need to be even to match the hub
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 
-k_inner = 16;
-k_outer = 20;
+k_inner = 10;
+k_outer = 10;
 k_cyl = 10;
 k_downstream = 7;
-mult = 1.3;
-first_layer_thickness = 0.005;
+
+mult = 1.1;
+k_bl = 20;
+mult = 1.08;
+first_layer_thickness = 0.01;
+
 delta_inner = 0.2;
 diamond_mult = 1.5;
 
@@ -48,7 +55,7 @@ hub_radius = 1.78;
 z_shift = 5;
 
 slice_spacing = 2;
-n_slices = 20;
+n_slices = 40;
 n_smooth = 100;
 
 R_a = 5; % Bounding rect length in y (y from -R_a to R_a)

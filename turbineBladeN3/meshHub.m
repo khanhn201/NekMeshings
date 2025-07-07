@@ -121,6 +121,40 @@ function [elements,boundaries, pp_coarse] = meshHub()
     all_points = layer_next;
 
 
+    X_bl = zeros(size(all_points,1), k_bl+1);
+    Y_bl = zeros(size(all_points,1), k_bl+1);
+    X_bl(:, 1) = all_points(:, 1);
+    Y_bl(:, 1) = all_points(:, 2);
+    for k=1:k_bl
+        layer_next = [];
+        for t=1:size(all_points, 1)
+            p1 = all_points(t, :);
+            if t == 1
+                p2 = all_points(end, :);
+            else
+                p2 = all_points(t-1, :);
+            end
+            if t == size(all_points, 1)
+                p3 = all_points(1, :);
+            else
+                p3 = all_points(t+1, :);
+            end
+
+                % q2 = findBisectors(p1, p2, p3);
+            [q1, q2, q3] = findQuarterBisectors(p1, p2, p3);
+            U = p1 + first_layer_thickness*mult^(k-1)*q2;
+            X_bl(t, k+1) = U(1);
+            Y_bl(t, k+1) = U(2);
+            layer_next = [layer_next; U];
+        end
+        [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp]= fitSplineCus(layer_next);
+        s_finetemp = linspace(0, arc_lengthtemp, size(all_points, 1) + 1)(1:end-1);
+        ratt = k/k_bl;
+        s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
+        layer_next = ppval(pptemp, s_finetemp)';
+        all_points = layer_next;
+    end
+
 
 
 
@@ -240,15 +274,18 @@ function [elements,boundaries, pp_coarse] = meshHub()
     % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
     % end
     % Original X, Y of size (nx, ny)
-    X_mid = 0.5 * (X(:,1) + X(:,2));
-    Y_mid = 0.5 * (Y(:,1) + Y(:,2));
+    % X_mid = 0.5 * (X(:,1) + X(:,2));
+    % Y_mid = 0.5 * (Y(:,1) + Y(:,2));
+    %
+    % % Insert the midpoint layer between j=1 and j=2
+    % X = [X(:,1), X_mid(:,:), X(:,2:end)];
+    % Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
 
-    % Insert the midpoint layer between j=1 and j=2
-    X = [X(:,1), X_mid(:,:), X(:,2:end)];
-    Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
+    X = [X_bl, X(:, 2:end)];
+    Y = [Y_bl, Y(:, 2:end)];
 
     for i = 1:nx
-    for j = 2:ny+1
+    for j = 2:size(X, 2)
         inext = i + 1;
         if i == nx
             inext = 1;
@@ -282,7 +319,7 @@ function [elements,boundaries, pp_coarse] = meshHub()
             elements(end+1, :, :) = element;
         % end
 
-        if j == ny
+        if j == size(X, 2)
             if i > k_inner && i < k_inner + n_top + 3
                 boundaries(end+1, :) = [size(elements, 1); 2;];
             end
@@ -390,4 +427,24 @@ function rotated_vec = rotateVector(vec, angle)
         sind(angle), cosd(angle), 0;
         0, 0, 0;];
     rotated_vec = rotation_matrix * vec(:);
+end
+function [pp, arc_length, cumulative_arc_lengths]= fitSplineCus(slice);
+    [max_y, max_idx] = max(slice(:, 2));
+    slice_c = [slice; slice(1, :)];
+
+    differences = diff(slice_c);
+    arc_lengths = sqrt(sum(differences.^2, 2));
+    cumulative_arc_lengths = [0; cumsum(arc_lengths)];
+    x = cumulative_arc_lengths;
+    arc_length = cumulative_arc_lengths(end);
+    arc_length_at_max_y = cumulative_arc_lengths(max_idx);
+
+    y = [slice; slice(1, :)];
+    % y = [[0;0;0]';y;[0;0;0]'];
+    y = [
+        (y(2,:)-y(1,:))/(x(2)-x(1)); 
+        y; 
+        (y(end,:)-y(end-1,:))/(x(end)-x(end-1));];
+    pp = spline(x, y');
+    % pp = splinefit(x, y', x, "periodic", true);
 end
