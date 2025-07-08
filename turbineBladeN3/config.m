@@ -7,9 +7,9 @@ k_outer = 10;
 k_cyl = 35;
 k_downstream = 15;
 
-k_bl = 35;
+k_bl = 25;
 mult = 1.08;
-first_layer_thickness = 0.01;
+first_layer_thickness = 0.02;
 
 delta_inner = 0.2;
 diamond_mult = 1.5;
@@ -38,13 +38,13 @@ R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 
 % n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 %
 % k_inner = 8;
-% k_outer = 10;
+% k_outer = 6;
 % k_cyl = 10;
 % k_downstream = 7;
 %
 % k_bl = 10;
 % mult = 1.2;
-% first_layer_thickness = 0.02;
+% first_layer_thickness = 0.05;
 %
 % delta_inner = 0.2;
 % diamond_mult = 1.5;

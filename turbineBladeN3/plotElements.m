@@ -24,7 +24,7 @@ function plotElements(elements, boundaries)
         centroid_y = mean(y(1:end-1));
         
         % Plot element number
-        text(centroid_x, centroid_y, num2str(k), 'FontSize', 14, 'Color', 'b');
+        % text(centroid_x, centroid_y, num2str(k), 'FontSize', 14, 'Color', 'b');
 
     end
     axis equal;

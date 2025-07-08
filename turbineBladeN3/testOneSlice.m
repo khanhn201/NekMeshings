@@ -4,9 +4,9 @@ slice = squeeze(slicesCoord(end, :, :));
 [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
 [elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
 elements = [elements; elementsInner;];
-% plotElements(elements, []);
+plotElements(elements, []);
 [elements, boundaries, pp_coarse] = meshHub();
-plotElementsSym(elements, []);
+% plotElementsSym(elements, []);
 
 [elements, boundaries] = wrapFan2([0, 4, 6, 8, 10, 12, 14, 16, 18, 20]');
 

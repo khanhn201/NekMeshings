@@ -26,14 +26,14 @@ R_upstream = 5000
 
 
 % three blades
-n_segs = 8;
-k_inner = 18;
-k_outer = 12;
-k_upstream = 20;
-k_downstream = 35;
-k_blade = 8;
+n_segs = 20;
+k_inner = 48;
+k_outer = 36;
+k_upstream = 40;
+k_downstream = 55;
+k_blade = 32;
 
-mult = 1.2;
+mult = 1.01;
 delta_inner = 0.4;
 mult_stream = 1.08
 
@@ -46,7 +46,7 @@ R_x = 65; % End cap position (-R_x and R_x)
 
 % Farfield
 R_far_top = 150
-R_far_bottom = -150
+R_far_bottom = -90
 R_far_horizontal = 150
 R_downstream = -200
 R_upstream = 80

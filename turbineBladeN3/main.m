@@ -204,7 +204,6 @@ for j = 2:layer_count
             element(5,:) = [Xmod(inext,j),   Ymod(inext,j), z+mp];
             element(6,:) = [Xmod(i,j),       Ymod(i,j), z+mp];
         end
-        checkLeftHanded(element);
         elements(end+1, :, :) = element;
 
         if j==layer_count
@@ -331,8 +330,6 @@ if R_downstream < 0
             cylElemk1(:, 2) = y;
             element = [cylElemk1; cylElemk];
 
-            checkLeftHanded(element);
-
             elements(end+1, :, :) = element;
             [isBoundary, idx] = ismember(elem, cylBoundaries(:, 1));
             if isBoundary
@@ -354,8 +351,6 @@ if R_downstream < 0
             cylElemk1(:, 2) = y;
             element = [cylElemk1; cylElemk];
 
-            checkLeftHanded(element);
-
             elements(end+1, :, :) = element;
             [isBoundary, idx] = ismember(elem, gridBoundaries(:, 1));
             if isBoundary
@@ -369,6 +364,7 @@ if R_downstream < 0
 end
 
 
+disp("checking lefthand")
 for i=1:size(elements, 1)
     checkLeftHanded(squeeze(elements(i, :, :)));
 end
