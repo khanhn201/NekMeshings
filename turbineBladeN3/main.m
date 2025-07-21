@@ -265,6 +265,12 @@ for j = 1:layer_count-1
 end
 zs(end+1) = z_diag(end-1);
 
+
+
+
+
+
+
 disp("wrap cylinder")
 % Wrap cylinder
 zs = squeeze(zs);
@@ -363,11 +369,11 @@ if R_downstream < 0
     end
 end
 
-
-disp("checking lefthand")
-for i=1:size(elements, 1)
-    checkLeftHanded(squeeze(elements(i, :, :)));
-end
+%
+% disp("checking lefthand")
+% for i=1:size(elements, 1)
+%     checkLeftHanded(squeeze(elements(i, :, :)));
+% end
 
 
 % plotBC(elements, boundaries)

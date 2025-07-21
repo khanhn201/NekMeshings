@@ -1,10 +1,10 @@
-n_top = 36; % Need to be even to match the hub
+n_top = 48; % Need to be even to match the hub
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 % n_leading = 3;
 
 k_inner = 18;
-k_outer = 10;
-k_cyl = 35;
+k_outer = 20;
+k_cyl = 30;
 k_downstream = 15;
 
 k_bl = 25;
@@ -19,7 +19,7 @@ hub_radius = 1.78;
 z_shift = 3.5;
 
 slice_spacing = 2;
-n_slices = 120;
+n_slices = 240;
 n_smooth = 100;
 
 R_a = 5; % Bounding rect length in y (y from -R_a to R_a)

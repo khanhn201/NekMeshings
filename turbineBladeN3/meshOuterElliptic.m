@@ -158,7 +158,7 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
         end
         [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp]= fitSplineCus(layer_next);
         s_finetemp = linspace(0, arc_lengthtemp, size(all_points, 1) + 1)(1:end-1);
-        ratt = k/k_bl;
+        ratt = min(k, 10)/min(k_bl,10);
         s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
         layer_next = ppval(pptemp, s_finetemp)';
         all_points = layer_next;
@@ -296,8 +296,8 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
     end
     end
 
-    m = [reshape(X_bl(:, 1:3), [],1), reshape(Y_bl(:, 1:3), [],1)];
-    % elements = relaxQuadMesh(elements, [surface_points; [c4; z*ones(size(c4,2),1)']'; [m, z*ones(size(m,1),1)]], 10);
+    % m = [reshape(X_bl(:, 1:2), [],1), reshape(Y_bl(:, 1:2), [],1)];
+    % elements = relaxQuadMesh(elements, [surface_points; [c4; z*ones(size(c4,2),1)']'; [m, z*ones(size(m,1),1)]], 1);
     checkCounterClockwise(elements)
 end
 
