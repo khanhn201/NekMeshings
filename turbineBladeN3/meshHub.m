@@ -1,4 +1,4 @@
-function [elements,boundaries, pp_coarse] = meshHub()
+function [elements,boundaries, pp_coarse] = meshHub(projAngle)
     config
     nx=2*n_top + 4*k_inner + 4;
     ny=k_outer;
@@ -14,7 +14,7 @@ function [elements,boundaries, pp_coarse] = meshHub()
     for i=1:size(all_points,1)
         x = -hub_radius*cos(theta(i));
         y = hub_radius*sin(theta(i));
-        z = abs(x/sqrt(3));
+        z = abs(x)*tan(projAngle);
         all_points(i,1) = x;
         all_points(i,2) = y;
         all_points(i,3) = z;
@@ -333,7 +333,7 @@ function [elements,boundaries, pp_coarse] = meshHub()
     for i=1:size(elements,1)
         for j=1:4
             x = elements(i,j,1);
-            z = abs(x/sqrt(3));
+            z = abs(x)*tan(projAngle);
             elements(i,j,3) = z;
         end
     end

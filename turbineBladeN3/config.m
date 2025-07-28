@@ -16,6 +16,7 @@ diamond_mult = 1.5;
 
 % beta % spacing along airfoil;
 hub_radius = 1.78;
+hub_layers = 8;
 z_shift = 3.5;
 
 slice_spacing = 2;

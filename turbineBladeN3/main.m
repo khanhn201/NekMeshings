@@ -12,12 +12,20 @@ sliceBoundaries = [];
 sliceSplines = {};
 
 disp("mesh slices")
-[elements, boundaries, pp_coarse] = meshHub();
-z = 0;
-sliceElements(end+1, :, :, :) = elements;
-sliceBoundaries = boundaries;
 zs(end+1) = 0;
-sliceSplines{size(sliceElements,1)} = pp_coarse;
+for i = 1:hub_layers
+    da = (i-1)/(hub_layers)*(z_shift-R_a/sqrt(3)) + R_a/sqrt(3);
+    db = (i-1)/(hub_layers)*z_shift;
+    projAngle = atan2(da - db,R_a);
+    [elements, boundaries, pp_coarse] = meshHub(projAngle);
+    elements(:, :, 3) += db;
+    sliceElements(end+1, :, :, :) = elements;
+    sliceBoundaries = boundaries;
+    if i > 1 % 1st layer is assumed to be 0 for wrapFanDiamond
+        zs(end+1) = da;
+    end
+    sliceSplines{size(sliceElements,1)} = pp_coarse;
+end
 for i = 1:n_slices
     i
     slice = squeeze(slicesCoord(i, :, :));
@@ -182,8 +190,8 @@ end
 
 z_diag = [z+first_layer_thickness];
 for j = 2:layer_count
-    m = first_layer_thickness + Xmod(1, 1) - Xmod(1, j);
-    mp = first_layer_thickness + Xmod(1, 1) - Xmod(1, j-1);
+    m = first_layer_thickness + (Xmod(1, 1) - Xmod(1, j));
+    mp = first_layer_thickness + (Xmod(1, 1) - Xmod(1, j-1));
     for i = 1:layer_size
         inext = i + 1;
         if i == layer_size
