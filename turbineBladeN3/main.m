@@ -17,8 +17,7 @@ for i = 1:hub_layers
     da = (i-1)/(hub_layers)*(z_shift-R_a/sqrt(3)) + R_a/sqrt(3);
     db = (i-1)/(hub_layers)*z_shift;
     projAngle = atan2(da - db,R_a);
-    [elements, boundaries, pp_coarse] = meshHub(projAngle);
-    elements(:, :, 3) += db;
+    [elements, boundaries, pp_coarse] = meshHub(projAngle, db);
     sliceElements(end+1, :, :, :) = elements;
     sliceBoundaries = boundaries;
     if i > 1 % 1st layer is assumed to be 0 for wrapFanDiamond
