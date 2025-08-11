@@ -33,7 +33,7 @@ k_upstream = 40;
 k_downstream = 55;
 k_blade = 32;
 
-mult = 1.01;
+mult = 1.2;
 delta_inner = 0.4;
 mult_stream = 1.08
 

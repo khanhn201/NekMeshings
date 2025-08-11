@@ -8,20 +8,8 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
 
     point_at_min = ppval(pp, 0);
     z = point_at_min(3);
-    i = 0:nx/2;
-    % i = 0:(nx/2);
-    cheb_nodes = cos(i*pi / (nx/2));
-    cheb_nodes_mapped = (cheb_nodes + 1) / 2;
-    s_fine = cheb_nodes_mapped * arc_length_at_max_y;
-    s_fine1 = flip(s_fine)(1:end-1);
-    s_fine = cheb_nodes_mapped * (arc_length-arc_length_at_max_y) + arc_length_at_max_y;
-    s_fine2 = flip(s_fine)(1:end-1);
-    s_fine = [s_fine1(1), s_fine1(3:end-1),...
-              s_fine2(1), s_fine2(3:end-1)];
-    s_fine = [s_fine1, s_fine2];
 
-    s_fine = linspace(0, arc_length, n_top + n_bottom + 4*k_inner + 1)(1:end-1);
-
+    s_fine = generateSplineParameter(arc_length_at_max_y, arc_length, 2*n_top + 4*k_inner);
 
     all_points = ppval(pp, s_fine)';
     surface_points = all_points;
@@ -151,14 +139,18 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
 
                 % q2 = findBisectors(p1, p2, p3);
             [q1, q2, q3] = findQuarterBisectors(p1, p2, p3);
-            U = p1 + first_layer_thickness*mult^(k-1)*q2;
+            if (k==1 && (t==1 || t==length(all_points)/2+1))
+                U = p1 + first_layer_thickness*mult^(k-1)*q2*0.8;
+            else
+                U = p1 + first_layer_thickness*mult^(k-1)*q2;
+            end
             X_bl(t, k+1) = U(1);
             Y_bl(t, k+1) = U(2);
             layer_next = [layer_next; U];
         end
-        [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp]= fitSplineCus(layer_next);
-        s_finetemp = linspace(0, arc_lengthtemp, size(all_points, 1) + 1)(1:end-1);
-        ratt = min(k, 10)/min(k_bl,10);
+        [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp, arc_length_at_max_ytemp]= fitSplineCus(layer_next);
+        s_finetemp = generateSplineParameter(arc_length_at_max_ytemp, arc_lengthtemp, 2*n_top + 4*k_inner + 4);
+        ratt = k/k_bl;
         s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
         layer_next = ppval(pptemp, s_finetemp)';
         all_points = layer_next;
@@ -248,25 +240,8 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
         warning('convergence not reached')
     end
 
-    % clf 
-    % hold on
-    % axis equal
-    % for m=1:nx
-    % plot(X(m,:),Y(m,:),'b');
-    % end
-    % for m=1:ny
-    % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-    % end
-    % X_mid = 0.5 * (X(:,1) + X(:,2));
-    % Y_mid = 0.5 * (Y(:,1) + Y(:,2));
-
-    % Insert the midpoint layer between j=1 and j=2
-    % X = [X(:,1), X_mid(:,:), X(:,2:end)];
-    % Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
     X = [X_bl, X(:, 2:end)];
     Y = [Y_bl, Y(:, 2:end)];
-    % X = X_bl;
-    % Y = Y_bl;
 
     for i = 1:nx
     for j = 2:size(X, 2)
@@ -296,8 +271,8 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
     end
     end
 
-    % m = [reshape(X_bl(:, 1:2), [],1), reshape(Y_bl(:, 1:2), [],1)];
-    % elements = relaxQuadMesh(elements, [surface_points; [c4; z*ones(size(c4,2),1)']'; [m, z*ones(size(m,1),1)]], 1);
+    % m = [reshape(X_bl(:, 1:4), [],1), reshape(Y_bl(:, 1:4), [],1)];
+    % elements = relaxQuadMesh(elements, [surface_points; [c4; z*ones(size(c4,2),1)']'; [m, z*ones(size(m,1),1)]], 3);
     checkCounterClockwise(elements)
 end
 
@@ -364,25 +339,6 @@ function [q1, q2, q3] = findQuarterBisectors(p1, p2, p3)
     q2 = bisector(:)';
     q3 = q3(:)';
 end
-function q2 = findBBisectors(p1, p2, p3)
-    vec1 = p2 - p1;
-    vec2 = p3 - p1;
-    % vec1 = vec1 / norm(vec1);
-    % vec2 = vec2 / norm(vec2);
-
-    bisector = vec1 / sqrt(norm(vec1)) + vec2/ sqrt(norm(vec2));
-    bisector = bisector / norm(bisector);
-    bi_mid = vec1 / norm(vec1) + vec2 / norm(vec2);
-    cross_prod = cross(vec1, vec2);
-    if cross_prod(3) > 0
-        bisector = -bisector;
-        bi_mid = -bi_mid;
-        bisector = bi_mid;
-    end
-    
-    q2 = bisector(:)';
-    q2 = q2/norm(q2);
-end
 
 function [trivec1, trivec2]=findTrisects(p1, p2, p3)
     vec1 = p2 - p1;
@@ -409,8 +365,11 @@ function rotated_vec = rotateVector(vec, angle)
         0, 0, 0;];
     rotated_vec = rotation_matrix * vec(:);
 end
-function [pp, arc_length, cumulative_arc_lengths]= fitSplineCus(slice);
-    [max_y, max_idx] = max(slice(:, 2));
+
+
+
+function [pp, arc_length, cumulative_arc_lengths, arc_length_at_max_y]= fitSplineCus(slice);
+    [max_y, max_idx] = max(slice(:, 1));
     slice_c = [slice; slice(1, :)];
 
     differences = diff(slice_c);

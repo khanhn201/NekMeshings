@@ -8,7 +8,7 @@
 
 
 function [pp, arc_length, arc_length_at_max_y]= fitSpline(slice);
-    [max_y, max_idx] = max(slice(:, 2));
+    [max_y, max_idx] = max(slice(:, 1));
     slice_c = [slice; slice(1, :)];
 
     differences = diff(slice_c);

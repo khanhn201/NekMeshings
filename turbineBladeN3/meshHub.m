@@ -7,7 +7,7 @@ function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
 
     z = 0;
     i = 0:nx/2;
-    theta = linspace(0, 2*pi, n_top + n_bottom + 4*k_inner + 1)(1:end-1);
+    theta = generateSplineParameter(pi, 2*pi, 2*n_top + 4*k_inner);
 
 
     all_points = zeros(size(theta, 2), 3);
@@ -142,13 +142,17 @@ function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
 
                 % q2 = findBisectors(p1, p2, p3);
             [q1, q2, q3] = findQuarterBisectors(p1, p2, p3);
-            U = p1 + first_layer_thickness*mult^(k-1)*q2;
+            if (k==1 && (t==1 || t==length(all_points)/2+1))
+                U = p1 + first_layer_thickness*mult^(k-1)*q2*0.8;
+            else
+                U = p1 + first_layer_thickness*mult^(k-1)*q2;
+            end
             X_bl(t, k+1) = U(1);
             Y_bl(t, k+1) = U(2);
             layer_next = [layer_next; U];
         end
-        [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp]= fitSplineCus(layer_next);
-        s_finetemp = linspace(0, arc_lengthtemp, size(all_points, 1) + 1)(1:end-1);
+        [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp, arc_length_at_max_ytemp]= fitSplineCus(layer_next);
+        s_finetemp = generateSplineParameter(arc_length_at_max_ytemp, arc_lengthtemp, 2*n_top + 4*k_inner + 4);
         ratt = k/k_bl;
         s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
         layer_next = ppval(pptemp, s_finetemp)';
@@ -236,16 +240,6 @@ function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
         warning('convergence not reached')
     end
 
-    % clf 
-    % hold on
-    % axis equal
-    % for m=1:nx
-    % plot(X(m,:),Y(m,:),'b');
-    % end
-    % for m=1:ny
-    % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-    % end
-
     X = [X_bl, X(:, 2:end)];
     Y = [Y_bl, Y(:, 2:end)];
 
@@ -268,22 +262,6 @@ function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
     end
     end
 
-    % clf 
-    % hold on
-    % axis equal
-    % for m=1:nx
-    % plot(X(m,:),Y(m,:),'b');
-    % end
-    % for m=1:ny
-    % plot(X(:,m),Y(:,m),'Color',[0 0 0]);
-    % end
-    % Original X, Y of size (nx, ny)
-    % X_mid = 0.5 * (X(:,1) + X(:,2));
-    % Y_mid = 0.5 * (Y(:,1) + Y(:,2));
-    %
-    % % Insert the midpoint layer between j=1 and j=2
-    % X = [X(:,1), X_mid(:,:), X(:,2:end)];
-    % Y = [Y(:,1), Y_mid(:,:), Y(:,2:end)];
     for i = 1:nx
     for j = 2:size(X, 2)
         inext = i + 1;
@@ -294,30 +272,12 @@ function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
         p2 = [X(i,j),       Y(i,j), z];
         p3 = [X(i,j-1),     Y(i,j-1), z];
         p4 = [X(inext,j-1), Y(inext,j-1), z];
-        % if j == 2
-        %     % Split first layer
-        %     element1 = zeros(4,3);
-        %     element1(1,:) = p1;
-        %     element1(2,:) = p2;
-        %     element1(3,:) = (p2+p3)/2;
-        %     element1(4,:) = (p4+p1)/2;
-        %     elements(end+1, :, :) = element1;
-        %
-        %     element2 = zeros(4,3);
-        %     element2(1,:) = (p4+p1)/2;
-        %     element2(2,:) = (p2+p3)/2;
-        %     element2(3,:) = p3;
-        %     element2(4,:) = p4;
-        %     elements(end+1, :, :) = element2;
-        % else
-            % Regular element
-            element = zeros(4,3);
-            element(1,:) = p1;
-            element(2,:) = p2;
-            element(3,:) = p3;
-            element(4,:) = p4;
-            elements(end+1, :, :) = element;
-        % end
+        element = zeros(4,3);
+        element(1,:) = p1;
+        element(2,:) = p2;
+        element(3,:) = p3;
+        element(4,:) = p4;
+        elements(end+1, :, :) = element;
 
         if j == size(X, 2)
             if i > k_inner && i < k_inner + n_top + 3
@@ -428,8 +388,8 @@ function rotated_vec = rotateVector(vec, angle)
         0, 0, 0;];
     rotated_vec = rotation_matrix * vec(:);
 end
-function [pp, arc_length, cumulative_arc_lengths]= fitSplineCus(slice);
-    [max_y, max_idx] = max(slice(:, 2));
+function [pp, arc_length, cumulative_arc_lengths, arc_length_at_max_y]= fitSplineCus(slice);
+    [max_y, max_idx] = max(slice(:, 1));
     slice_c = [slice; slice(1, :)];
 
     differences = diff(slice_c);

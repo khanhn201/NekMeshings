@@ -230,7 +230,7 @@ end
 disp("capping ends inner")
 % Add end caps inner
 [pp, arc_length, arc_length_at_max_y] = fitSpline(endcap_slice);
-[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
+[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length, arc_length_at_max_y);
 inner_size = size(elementsInner, 1);
 elementsInner = [elementsInner; first_layer];
 

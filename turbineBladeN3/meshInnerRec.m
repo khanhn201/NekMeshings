@@ -1,4 +1,4 @@
-function [elements,boundaries] = meshInnerRec(pp, arc_length)
+function [elements,boundaries] = meshInnerRec(pp, arc_length, arc_length_at_max_y)
     config
     tail_count = k_inner+4;
 
@@ -6,10 +6,7 @@ function [elements,boundaries] = meshInnerRec(pp, arc_length)
 
 
     N_total = n_top + 2*k_inner+1;
-    i = 0:(N_total-1);
-    cheb_nodes = cos(i*pi / (N_total-1));
-    cheb_nodes_mapped = (cheb_nodes + 1) / 2;
-    s_fine = [linspace(0, arc_length, n_top+n_bottom+4*k_inner + 1)(1:end-1)];
+    s_fine = generateSplineParameter(arc_length_at_max_y, arc_length, 2*n_top + 4*k_inner);
 
 
     all_points = ppval(pp, s_fine)';

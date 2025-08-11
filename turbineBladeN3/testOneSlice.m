@@ -1,12 +1,16 @@
 slicesCoord = readSlices('nrel5mw2.mat');
 slice = squeeze(slicesCoord(end, :, :));
+% slice = squeeze(slicesCoord(1, :, :));
 [pp, arc_length, arc_length_at_max_y] = fitSpline(slice);
 [elements, boundaries, pp_coarse] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y);
-[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length);
+[elementsInner, boundariesInner] = meshInnerRec(pp, arc_length, arc_length_at_max_y);
 elements = [elements; elementsInner;];
 plotElements(elements, []);
-[elements, boundaries, pp_coarse] = meshHub();
-% plotElementsSym(elements, []);
+config;
+da = R_a/sqrt(3);
+projAngle = atan2(da,R_a);
+[elements, boundaries, pp_coarse] = meshHub(projAngle, 0);
+plotElementsSym(elements, []);
 
 [elements, boundaries] = wrapFan2([0, 4, 6, 8, 10, 12, 14, 16, 18, 20]');
 
