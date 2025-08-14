@@ -35,17 +35,17 @@ R_end_caps = [61.6, 61.8, 62.5, 63.5, 64.5, 65.5, 67, 68.5, 70, 71.5, 73, 74.5, 
 
 
 % Coarse
-n_top = 16; % Need to be even to match the hub
+n_top = 10; % Need to be even to match the hub
 n_bottom = n_top; % inner meshing won't work without n_top = n_bottom
 
-k_inner = 12;
-k_outer = 12;
+k_inner = 8;
+k_outer = 16;
 k_cyl = 20;
 k_downstream = 7;
 
-k_bl = 15;
-mult = 1.2;
-first_layer_thickness = 0.01;
+k_bl = 13;
+mult = 1.5;
+first_layer_thickness = 0.002; % Target ~1e-4
 
 delta_inner = 0.2;
 diamond_mult = 1.5;
@@ -56,7 +56,7 @@ hub_layers = 5;
 z_shift = 5;
 
 slice_spacing = 2;
-n_slices = 80;
+n_slices = 60;
 n_smooth = 100;
 
 R_a = 5; % Bounding rect length in y (y from -R_a to R_a)

@@ -144,15 +144,19 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
             else
                 U = p1 + first_layer_thickness*mult^(k-1)*q2;
             end
-            X_bl(t, k+1) = U(1);
-            Y_bl(t, k+1) = U(2);
             layer_next = [layer_next; U];
         end
         [pptemp, arc_lengthtemp, cumulative_arc_lengthstemp, arc_length_at_max_ytemp]= fitSplineCus(layer_next);
-        s_finetemp = generateSplineParameter(arc_length_at_max_ytemp, arc_lengthtemp, 2*n_top + 4*k_inner + 4);
+        s_finetemp = [linspace(0, arc_length_at_max_ytemp, n_top + 2*k_inner + 2 + 1)(1:end-1)',
+          linspace(arc_length_at_max_ytemp, arc_lengthtemp, n_top + 2*k_inner + 2 + 1)(1:end-1)']';
         ratt = k/k_bl;
+        ratt = (mult^(k-1) - 1) / (mult^(k_bl-1) - 1);
         s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
         layer_next = ppval(pptemp, s_finetemp)';
+        for t=1:size(all_points, 1)
+            X_bl(t, k+1) = layer_next(t, 1);
+            Y_bl(t, k+1) = layer_next(t, 2);
+        end
         all_points = layer_next;
     end
 
@@ -214,7 +218,7 @@ function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic
         alpha(i,j)=x_eta.^2 + y_eta.^2;
         beta(i,j)=x_xi.*x_eta + y_xi.*y_eta;
         gamma(i,j)=x_xi.^2 + y_xi.^2;
-        
+
         newX(i,j)=(-0.5)./(alpha(i,j)+gamma(i,j)+10^-9).*(...
             2*beta(i,j).*(X(ip,j+1)-X(im,j+1)-X(ip,j-1) + X(im,j-1))/4 ...
             -alpha(i,j).*(X(ip,j)+X(im,j))-gamma(i,j).*(X(i,j+1)+X(i,j-1))...

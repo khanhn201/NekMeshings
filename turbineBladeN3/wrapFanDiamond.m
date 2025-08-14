@@ -12,17 +12,18 @@ function [elements, boundaries] = wrapFanDiamond(zs)
     r_square = zs(kh);
     r_max = zs(end);
 
-    pd1 = [-r_square*cos(- pi/6); 0; r_square*sin(- pi/6)]';
-    pd2 = [-r_square*cos(pi/3 - pi/6); 0; r_square*sin(pi/3 - pi/6)]';
-    pd3 = [-r_square*cos(2*pi/3 - pi/6); 0; r_square*sin(2*pi/3 - pi/6)]';
-
 
     km = 0:2*kh-2;  % 2*kh-1 points
-    theta = cos(pi * km / (2*kh-2));
-    theta = 1-(theta + 1)/2;
+    theta = 1-(km / (2*kh-2)).^1.4; % from 1 to 0
+    % theta = cos(-pi * km / (2*kh-2)/2);
+    theta = flip(theta); % from 0 to 1
     fv = theta;
     fu = (zs(kh:end) - zs(kh))/(zs(end) - zs(kh));
     theta = (-pi/6) + (2*pi/3) * theta;
+
+    pd1 = [-r_square*cos(-pi/6); 0; r_square*sin(-pi/6)]';
+    pd2 = [-r_square*cos(theta(ceil(end/2))); 0; r_square*sin(theta(ceil(end/2)))]';
+    pd3 = [-r_square*cos(2*pi/3 - pi/6); 0; r_square*sin(2*pi/3 - pi/6)]';
 
 
     u1 = [-zs(kh:end)' * cos(-pi/6); 

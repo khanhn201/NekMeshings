@@ -12,7 +12,7 @@ function s_fine=generateSplineParameter(arc_length_at_max_y, arc_length, n);
     s_fine = [s_fine1, s_fine2];
 
     % Linear
-    s_fine = [linspace(0, arc_length_at_max_y, n/2 + 1)(1:end-1)',
-              linspace(arc_length_at_max_y, arc_length, n/2 + 1)(1:end-1)']';
+    % s_fine = [linspace(0, arc_length_at_max_y, n/2 + 1)(1:end-1)',
+    %           linspace(arc_length_at_max_y, arc_length, n/2 + 1)(1:end-1)']';
 
 end
