@@ -1,0 +1,98 @@
+1,2c1
+< 
+< function [elements,boundaries, pp_coarse, X, Y, first_layer] = meshOuterElliptic(pp, arc_length, arc_length_at_max_y)
+---
+> function [elements,boundaries, pp_coarse] = meshHub(projAngle, shiftz)
+9,12c8,21
+<     point_at_min = ppval(pp, 0);
+<     z = point_at_min(3);
+< 
+<     s_fine = generateSplineParameter(arc_length_at_max_y, arc_length, 2*n_top + 4*k_inner);
+---
+>     z = 0;
+>     i = 0:nx/2;
+>     theta = generateSplineParameter(pi, 2*pi, 2*n_top + 4*k_inner);
+> 
+> 
+>     all_points = zeros(size(theta, 2), 3);
+>     for i=1:size(all_points,1)
+>         x = -hub_radius*cos(theta(i));
+>         y = hub_radius*sin(theta(i));
+>         z = abs(x)*tan(projAngle) + shiftz;
+>         all_points(i,1) = x;
+>         all_points(i,2) = y;
+>         all_points(i,3) = z;
+>     end
+14,16c23
+<     all_points = ppval(pp, s_fine)';
+<     surface_points = all_points;
+<     s_fine1 = [s_fine'; arc_length];
+---
+>     s_fine1 = [theta'; 2*pi];
+21a29
+> 
+23a32
+>     all_points(:, 3) = 0;
+74,78d82
+< 
+< 
+< 
+< 
+< 
+117d120
+<     first_layer = elements;
+148a152
+> 
+149a154,158
+>         s_finetemp = [linspace(0, arc_length_at_max_ytemp, n_top + 2*k_inner + 2 + 1)(1:end-1)',
+>           linspace(arc_length_at_max_ytemp, arc_lengthtemp, n_top + 2*k_inner + 2 + 1)(1:end-1)']';
+>         ratt = k/k_bl;
+>         ratt = (mult^(k-1) - 1) / (mult^(k_bl-1) - 1);
+>         s_finetemp = ratt*s_finetemp + (1-ratt)*cumulative_arc_lengthstemp(1:end-1)';
+174a184
+> 
+198,201d207
+< 
+< 
+< 
+< 
+231c237
+< 
+---
+>         
+261a268,286
+> 
+>     % Enforce symmetry
+>     for j = 1:size(X, 2)
+>         X(k_inner + n_top/2 + 2, j) = 0;
+>         X(3*k_inner + n_top + n_bottom/2 + 4, j) = 0;
+>     end
+>     for i = 1:k_inner + n_top/2 + 1
+>     for j = 1:size(X, 2)
+>         X(i, j) = -X(2*k_inner + n_top - i + 4, j);
+>         Y(i, j) = Y(2*k_inner + n_top - i + 4, j);
+>     end
+>     end
+>     for i = 3*k_inner + n_top + n_bottom/2 + 5: size(X, 1)
+>     for j = 1:size(X, 2)
+>         X(i, j) = -X(6*k_inner + 2*n_top + n_bottom - i + 8, j);
+>         Y(i, j) = Y(6*k_inner + 2*n_top + n_bottom - i + 8, j);
+>     end
+>     end
+> 
+289,291d313
+< 
+<     % m = [reshape(X_bl(:, 1:4), [],1), reshape(Y_bl(:, 1:4), [],1)];
+<     % elements = relaxQuadMesh(elements, [surface_points; [c4; z*ones(size(c4,2),1)']'; [m, z*ones(size(m,1),1)]], 3);
+292a315,321
+>     for i=1:size(elements,1)
+>         for j=1:4
+>             x = elements(i,j,1);
+>             z = abs(x)*tan(projAngle) + shiftz;
+>             elements(i,j,3) = z;
+>         end
+>     end
+384,386d412
+< 
+< 
+< 

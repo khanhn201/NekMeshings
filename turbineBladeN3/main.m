@@ -247,7 +247,7 @@ for j = 1:layer_count-1
     elementsInnerNext(:, :, 2) += uy;
     elementsInnerNext(:, :, 3) = z_diag(j);
     p_coord = [Xmod(:, j), Ymod(:, j), z_diag(j)*ones(layer_size,1)];
-    elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 50);
+    elementsInnerNext = relaxQuadMesh(elementsInnerNext, p_coord, 1);
 
 
     numElems = size(elementsInner, 1);

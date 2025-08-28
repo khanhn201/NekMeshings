@@ -27,17 +27,17 @@ R_upstream = 5000
 
 % three blades
 n_segs = 20;
-k_inner = 48;
-k_outer = 36;
-k_upstream = 40;
-k_downstream = 55;
-k_blade = 32;
+k_inner = 24;
+k_outer = 18;
+k_upstream = 30;
+k_downstream = 45;
+k_blade = 16;
 
-mult = 1.2;
+mult = 1.001;
 delta_inner = 0.4;
 mult_stream = 1.08
 
-Ra = 12; % Inner square width (from -1250 to 1250)
+Ra = 20; % Inner square width
 
 % Turbine Blade region
 R_t = 4.6; % Bounding rect top

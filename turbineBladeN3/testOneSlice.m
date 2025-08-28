@@ -9,8 +9,8 @@ plotElements(elements, []);
 config;
 da = R_a/sqrt(3);
 projAngle = atan2(da,R_a);
-% [elements, boundaries, pp_coarse] = meshHub(projAngle, 0);
-% plotElementsSym(elements, []);
+[elements, boundaries, pp_coarse] = meshHub(projAngle, 0);
+plotElementsSym(elements, []);
 
 [elements, boundaries] = wrapFan2([0, 4, 6, 8, 10, 12, 14, 16, 18, 20]');
 
