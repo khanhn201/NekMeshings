@@ -1,4 +1,4 @@
-function exportRE2(filename, elements, boundaries)
+function exportRE2(filename, elements, boundaries, nScalar=0)
   % Rea file
   % fileID = fopen(strcat(filename, '.rea'), 'w');
 
@@ -44,9 +44,10 @@ function exportRE2(filename, elements, boundaries)
   end
   % curve
   fwrite(fid, 0, 'double'); % 0 curve
-  % boundaries
   fwrite(fid, size(boundaries, 1), 'double'); % bc
 
+
+  % boundaries fluid
   bcMap = getBCMap();
   for i = 1:size(boundaries, 1)
     elem = boundaries(i, 1);
@@ -68,6 +69,32 @@ function exportRE2(filename, elements, boundaries)
     end
 
     fwrite(fid, buf2, 'double'); %x
+  end
+  % boundaries scalar
+  for i = 1:nScalar
+      fwrite(fid, size(boundaries, 1), 'double'); % bc
+
+      for i = 1:size(boundaries, 1)
+        elem = boundaries(i, 1);
+        face = boundaries(i, 2);
+        tag = boundaries(i, 3);
+        buf2 = zeros(1, 8);
+        buf2(1) = double(elem);
+        buf2(2) = double(face);
+        buf2(3) = 0.0;
+        buf2(4) = 0.0;
+        buf2(5) = 0.0;
+        buf2(6) = 0.0;
+        buf2(7) = 0.0;
+        if bcMap.id2strS.isKey(tag)
+            buf2(8) = strToDouble(bcMap.id2strS(tag));
+        else
+            tag
+            buf2(8) = 0; % unknown
+        end
+
+        fwrite(fid, buf2, 'double'); %x
+      end
   end
   fclose(fid);
 end

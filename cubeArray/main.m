@@ -88,4 +88,4 @@ boundaries(idx,:) = [];
 
 
 exportVTK('test.vtk', elements, boundaries)
-exportRE2('cbarr', elements, boundaries)
+exportRE2('cbarr', elements, boundaries, 4)
