@@ -1,32 +1,8 @@
-function exportRE2(filename, elements, boundaries, nScalar=0)
-  % Rea file
-  % fileID = fopen(strcat(filename, '.rea'), 'w');
-
-% Add header
-%   headerID = fopen('header.rea', 'r');
-%   while ~feof(headerID)
-%       line = fgets(headerID);
-%       fprintf(fileID, '%s', line);
-%   end
-%   fclose(headerID);
-%
-% % Mesh
-%   fprintf(fileID,'**MESH DATA** 6 lines are X,Y,Z;X,Y,Z. Columns corners 1-4;5-8\n');
-%   fprintf(fileID,'      %8i   %8i   %8i NELT,NDIM,NELV\n',-size(elements,1),3,size(elements,1));
-% % Add footer
-%   footerID = fopen('footer.rea', 'r');
-  % while ~feof(footerID)
-  %     line = fgets(footerID);
-  %     fprintf(fileID, '%s', line);
-  % end
-  % fclose(footerID);
-  % fprintf(fileID, '\n');
-  % fclose(fileID);
+function exportRE2(filename, elements, boundaries, num_dim=3, nScalar=0)
 
   % Re2 file
   fid = fopen(strcat(filename, '.re2'), 'w');
   test = single(6.54321);
-  num_dim = 3;
   num_elem = size(elements, 1);
   nBC = 1;
   header = sprintf('#v004%16d%3d%16d%4d hdr', num_elem, num_dim, num_elem, nBC);
@@ -38,9 +14,9 @@ function exportRE2(filename, elements, boundaries, nScalar=0)
   % xyz
   for i = 1:size(elements,1)
     fwrite(fid, 0, 'double'); % igroup
-    fwrite(fid, elements(i, 1:8, 1), 'double'); %x
-    fwrite(fid, elements(i, 1:8, 2), 'double'); %y
-    fwrite(fid, elements(i, 1:8, 3), 'double'); %z
+    for j = 1:num_dim
+      fwrite(fid, elements(i, 1:2^num_dim, j), 'double');
+    end
   end
   % curve
   fwrite(fid, 0, 'double'); % 0 curve
