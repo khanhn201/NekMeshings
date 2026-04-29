@@ -1,5 +1,5 @@
-function [elements, boundaries] = meshCirc(Nr, Ntheta, Ro)
-Ri = Ro/2;
+function [elements, boundaries] = meshCirc(Nr, Ntheta, Ro, R_rat, mult_r)
+Ri = Ro*R_rat;
 template = [
   Ri/sqrt(2), -Ri/sqrt(2), 0;
   fermatPoint([Ri/sqrt(2), -Ri/sqrt(2), 0],[Ri/sqrt(2), Ri/sqrt(2), 0],[Ro, 0,0]);
@@ -10,7 +10,8 @@ template = [
 
 boundaries = [];
 theta_p = linspace(0,1,Ntheta);
-r_p = linspace(0,1,Nr);
+r_p = 1:Nr;
+r_p = 1-(mult_r.^(Nr-(r_p-1))-mult_r)/(mult_r^(Nr)-mult_r);
 
 bottom = (1-theta_p')*template(3,:) + theta_p'*template(2,:);
 top = [Ro*cos(-theta_p*pi/4+pi/4); Ro*sin(-theta_p*pi/4+pi/4); 0*theta_p]';

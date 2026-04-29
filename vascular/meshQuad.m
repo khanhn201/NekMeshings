@@ -1,5 +1,5 @@
-function [elements, boundaries] = meshQuad(Nr, Ntheta, Ro, theta1, theta2)
-Ri = Ro/2;
+function [elements, boundaries] = meshQuad(Nr, Ntheta, Ro, theta1, theta2, R_rat, mult_r)
+Ri = Ro*R_rat;
 template = [
   Ri*cos(theta1), Ri*sin(theta1), 0;
   fermatPoint([Ri*cos(theta1), Ri*sin(theta1), 0],[Ri*cos(theta2), Ri*sin(theta2), 0],[Ro*cos(theta2/2+theta1/2), Ro*sin(theta2/2+theta1/2),0]);
@@ -10,7 +10,8 @@ template = [
 
 boundaries = [];
 theta_p = linspace(0,1,Ntheta);
-r_p = linspace(0,1,Nr);
+r_p = 1:Nr;
+r_p = 1-(mult_r.^(Nr-(r_p-1))-mult_r)/(mult_r^(Nr)-mult_r);
 
 bottom = (1-theta_p')*template(3,:) + theta_p'*template(2,:);
 top = [

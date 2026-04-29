@@ -6,22 +6,26 @@ R_main = 4;
 D_um = 3;
 D_depth = 0.5;
 angle = 1*pi/4;
-Nr = 4;
+Nr = 6;
 Ntheta = 4;
 
-Nquad = (Nr-1)*(Ntheta-1)*2 + (Ntheta-1)^2;
-Nz_left = 20;
-Nz_right = 40;
-Nz_graft = 15;
+R_rat = 0.5;
+mult_r = 1.7;
 
-[elements, boundariesCirc] = meshCirc(Nr, Ntheta, R_graft);
+Nquad = (Nr-1)*(Ntheta-1)*2 + (Ntheta-1)^2;
+Nz_leftfar = 10;
+Nz_leftclose = 10;
+Nz_right = 40;
+Nz_graft = 30;
+
+[elements, boundariesCirc] = meshCirc(Nr, Ntheta, R_graft, R_rat, mult_r);
 top = elements;
-top(:, :, 3) = top(:, :, 3) + 20;
+top(:, :, 3) = top(:, :, 3) + 25;
 
 elements = [];
 boundaries = [];
 
-[intersect, _, intersectCirc] = meshIntersect(Nr, Ntheta, R_graft, R_main, angle);
+[intersect, _, intersectCirc] = meshIntersect(Nr, Ntheta, R_graft, R_main, angle, R_rat, mult_r);
 [elements1, boundaries1] = meshFaceToFace(intersect, top, linspace(0, 1, Nz_graft), boundariesCirc, [1, 1]);
 elements1 = rotateY(elements1, angle);
 intersect = rotateY(intersect, angle);
@@ -34,17 +38,17 @@ boundaries = [boundaries; boundaries1];
 
 
 % Left pipe
-[lefto, boundariesCirc] = meshCirc(Nr, Ntheta, R_main);
+[lefto, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
 lefto = rotateY(lefto, pi);
 lefto(:, :, 3) = lefto(:, :, 3) + 30;
-[left, boundariesCirc] = meshCirc(Nr, Ntheta, R_main);
+[left, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
 left = rotateY(left, pi);
 for k=1:size(left,1)
   left(:, :, 3) = -left(:, :, 1);
 end
 left(:, :, 3) = left(:, :, 3) + 15;
 
-[elements1, boundaries1] = meshFaceToFace(lefto,left, linspace(0, 1, Nz_graft), boundariesCirc, [1, 1]);
+[elements1, boundaries1] = meshFaceToFace(lefto,left, linspace(0, 1, Nz_leftfar), boundariesCirc, [1, 1]);
 boundaries1(:, 1) += size(elements, 1);
 boundaries1 = boundaries1(boundaries1(:,3) != 6, :);
 boundaries1(boundaries1(:,3) == 5, 3) = 3;
@@ -54,16 +58,16 @@ boundaries = [boundaries; boundaries1];
 
 
 
-[leftSideM, boundariesLM] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(3,1,:))', -pi+pi/2-pi/8, 0);
-[leftSideP, boundariesLP] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(4,1,:))', pi-pi/2+pi/8, 1);
-[bypass, boundariesQuad] = meshQuad(Nr, Ntheta, R_main, pi/2+pi/8, 3*pi/2-pi/8);
+[leftSideM, boundariesLM] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(3,1,:))', -pi+pi/2-pi/8, 0, R_rat, mult_r);
+[leftSideP, boundariesLP] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(4,1,:))', pi-pi/2+pi/8, 1, R_rat, mult_r);
+[bypass, boundariesQuad] = meshQuad(Nr, Ntheta, R_main, pi/2+pi/8, 3*pi/2-pi/8, R_rat, mult_r);
 bypass = rotateX(bypass, pi);
 [elements1, boundaries1] = meshFaceToFace(left(1:4*Nquad,:,:),
                                         [bypass;
                                           leftSideM;
                                           intersect(2*Nquad+1:3*Nquad,:,:);
                                           leftSideP], 
-                                        linspace(0, 1, Nz_left),
+                                        linspace(0, 1, Nz_leftclose),
                                         boundariesCirc, [1,1]);
 boundaries1(:, 1) += size(elements, 1);
 boundaries1 = boundaries1(boundaries1(:,3) != 6, :);
@@ -72,13 +76,13 @@ elements = [elements; elements1];
 boundaries = [boundaries; boundaries1];
 
 
-[right, boundariesCirc] = meshCirc(Nr, Ntheta, R_main);
-right(:, :, 3) = right(:, :, 3) - 40;
+[right, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
+right(:, :, 3) = right(:, :, 3) - 30;
 
 
-[rightSideP, boundariesRP] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(1,1,:))', pi-pi/2+pi/8, 0);
-[rightSideM, boundariesRM] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(2,1,:))', -pi+pi/2-pi/8, 1);
-[bypass, boundariesQuad] = meshQuad(Nr, Ntheta, R_main, pi/2+pi/8, 3*pi/2-pi/8);
+[rightSideP, boundariesRP] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(1,1,:))', pi-pi/2+pi/8, 0, R_rat, mult_r);
+[rightSideM, boundariesRM] = meshSide(Nr, Ntheta, R_main, squeeze(intersectCirc(2,1,:))', -pi+pi/2-pi/8, 1, R_rat, mult_r);
+[bypass, boundariesQuad] = meshQuad(Nr, Ntheta, R_main, pi/2+pi/8, 3*pi/2-pi/8, R_rat, mult_r);
 
 [elements1, boundaries1] = meshFaceToFace(
                                 right,
@@ -96,13 +100,13 @@ boundaries = [boundaries; boundaries1];
 
 
 
-[elements1, boundaries1] = meshCap(Nr, Ntheta, R_main, intersect(Nquad+1:2*Nquad,:,:), leftSideM, rightSideM, intersectCirc(2,:,:), -1, 1.0, 0);
+[elements1, boundaries1] = meshCap(Nr, Ntheta, R_main, intersect(Nquad+1:2*Nquad,:,:), leftSideM, rightSideM, intersectCirc(2,:,:), -1, 1.0, 0, R_rat, mult_r);
 boundaries1(:, 1) += size(elements, 1);
 boundaries1(boundaries1(:,3) == 6, 3) = 1;
 elements = [elements; elements1];
 boundaries = [boundaries; boundaries1];
 
-[elements1, boundaries1] = meshCap(Nr, Ntheta, R_main, intersect(3*Nquad+1:4*Nquad,:,:), rightSideP, leftSideP, intersectCirc(4,:,:), 1, 1.0, 0);
+[elements1, boundaries1] = meshCap(Nr, Ntheta, R_main, intersect(3*Nquad+1:4*Nquad,:,:), rightSideP, leftSideP, intersectCirc(4,:,:), 1, 1.0, 0, R_rat, mult_r);
 boundaries1(:, 1) += size(elements, 1);
 boundaries1(boundaries1(:,3) == 6, 3) = 1;
 elements = [elements; elements1];

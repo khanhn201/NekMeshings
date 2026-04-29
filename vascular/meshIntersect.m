@@ -1,4 +1,4 @@
-function [elements, boundaries, circ] = meshIntersect(Nr, Ntheta, R1, R2, angle)
+function [elements, boundaries, circ] = meshIntersect(Nr, Ntheta, R1, R2, angle, R_rat, mult_r)
 a = [-1, 0, tan(pi/2-angle)];
 a = a / norm(a);
 ax = a(1); az = a(3);
@@ -23,7 +23,8 @@ boundaries = [];
 circ = [];
 
 
-r_p = linspace(0,1,Nr);
+r_p = 1:Nr;
+r_p = 1-(mult_r.^(Nr-(r_p-1))-mult_r)/(mult_r^(Nr)-mult_r);
 theta_p_loc = linspace(0,1,Ntheta);
 for i=1:4
   j = (i-1)*2 + 1;
@@ -31,8 +32,8 @@ for i=1:4
   k1 = j*(Ntheta-1) + 1;
   k2 = (j+1)*(Ntheta-1) + 1;
 
-  bottom0 = points(k0, :) / 2;
-  bottom2 = points(k2, :) / 2;
+  bottom0 = points(k0, :)*R_rat;
+  bottom2 = points(k2, :)*R_rat;
   bottom1 = fermatPoint([bottom0; bottom2; points(k1, :)]);
 
   bottom = (1-theta_p_loc)'*bottom0 + theta_p_loc'*bottom1;
@@ -52,26 +53,6 @@ for i=1:4
 
   circ(i,:,:) = [points(k0:k1, :); points(k1:k2, :)];
 end
-
-% bottom = points(Ntheta:2*Ntheta)/2;
-% top = points(Ntheta:2*Ntheta)
-% [elements2, boundaries2] = meshSideToSide(bottom, top, r_p);
-%
-% bottom = (1-theta_p')*template(4,:) + theta_p'*template(1,:);
-% top = (1-theta_p')*template(3,:) + theta_p'*template(2,:);
-% [elements3, boundaries3] = meshSideToSide(bottom, top, theta_p);
-%
-% n1 = size(elements1,1);
-% n2 = size(elements2,1);
-% boundaries2(:,1) = boundaries2(:,1) + n1;
-% boundaries3(:,1) = boundaries3(:,1) + n1 + n2;
-%
-% elements = [elements1;elements2;elements3];
-% boundaries = [boundaries1; boundaries2];
-% boundaries = boundaries(boundaries(:,3) == 3, :);
-
-
-
 
 end
 

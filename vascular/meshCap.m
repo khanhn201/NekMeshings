@@ -1,4 +1,4 @@
-function [elements, boundaries] = meshCap(Nr, Ntheta, R_main, top_face, left_face, right_face, top_circ, dir, D_um, D_depth)
+function [elements, boundaries] = meshCap(Nr, Ntheta, R_main, top_face, left_face, right_face, top_circ, dir, D_um, D_depth, R_rat, mult_r)
 % plotElements2D(left_face, [])
 Nring = (Nr-1)*(Ntheta-1);
 
@@ -27,7 +27,8 @@ pcenter = fermatPoint([
 ]);
 
 theta_p = linspace(0,1,Ntheta);
-r_p = linspace(0,1,Nr);
+r_p = 1:Nr;
+r_p = 1-(mult_r.^(Nr-(r_p-1))-mult_r)/(mult_r^(Nr)-mult_r);
 
 bottom = (1-theta_p)'*right_face(1, 1, :) + theta_p'*top_face(Nring+1, 1, :);
 top = (1-theta_p)'*right_face(Ntheta-1, 2,:) + theta_p'*pcenter;
