@@ -1,4 +1,4 @@
-function [elements, boundaries] = meshIntersect(Nr, Ntheta, R1, R2, angle)
+function [elements, boundaries, circ] = meshIntersect(Nr, Ntheta, R1, R2, angle)
 a = [-1, 0, tan(pi/2-angle)];
 a = a / norm(a);
 ax = a(1); az = a(3);
@@ -20,6 +20,7 @@ for k=1:length(theta_p)
 end
 elements = [];
 boundaries = [];
+circ = [];
 
 
 r_p = linspace(0,1,Nr);
@@ -32,7 +33,7 @@ for i=1:4
 
   bottom0 = points(k0, :) / 2;
   bottom2 = points(k2, :) / 2;
-  bottom1 = fermatPoint(bottom0, bottom2, points(k1, :));
+  bottom1 = fermatPoint([bottom0; bottom2; points(k1, :)]);
 
   bottom = (1-theta_p_loc)'*bottom0 + theta_p_loc'*bottom1;
   top    = points(k0:k1, :);
@@ -48,6 +49,8 @@ for i=1:4
   top = (1-theta_p_loc)'*bottom0 + theta_p_loc'*bottom1;
   [elements1, boundaries] = meshSideToSide(bottom, top, theta_p_loc);
   elements = [elements;elements1];
+
+  circ(i,:,:) = [points(k0:k1, :); points(k1:k2, :)];
 end
 
 % bottom = points(Ntheta:2*Ntheta)/2;
@@ -76,17 +79,9 @@ end
 
 
 
-function P = fermatPoint(A, B, C)
-a = norm(B - C);
-b = norm(A - C);
-c = norm(A - B);
-
-angleA = acos((b^2 + c^2 - a^2)/(2*b*c));
-angleB = acos((a^2 + c^2 - b^2)/(2*a*c));
-angleC = acos((a^2 + b^2 - c^2)/(2*a*b));
-
-f = @(P) norm(P - A) + norm(P - B) + norm(P - C);
-P0 = (A + B + C)/3;
+function P = fermatPoint(points)
+f = @(P) norm(P - points);
+P0 = mean(points);
 
 P = fminsearch(f, P0);
 end

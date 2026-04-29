@@ -1,9 +1,9 @@
-function [elements, boundaries] = meshCirc(Nr, Ntheta, Ro)
+function [elements, boundaries] = meshQuad(Nr, Ntheta, Ro, theta1, theta2)
 Ri = Ro/2;
 template = [
-  Ri/sqrt(2), -Ri/sqrt(2), 0;
-  fermatPoint([Ri/sqrt(2), -Ri/sqrt(2), 0],[Ri/sqrt(2), Ri/sqrt(2), 0],[Ro, 0,0]);
-  Ri/sqrt(2), Ri/sqrt(2), 0;
+  Ri*cos(theta1), Ri*sin(theta1), 0;
+  fermatPoint([Ri*cos(theta1), Ri*sin(theta1), 0],[Ri*cos(theta2), Ri*sin(theta2), 0],[Ro*cos(theta2/2+theta1/2), Ro*sin(theta2/2+theta1/2),0]);
+  Ri*cos(theta2), Ri*sin(theta2), 0;
   0, 0, 0;
 ];
 
@@ -13,10 +13,18 @@ theta_p = linspace(0,1,Ntheta);
 r_p = linspace(0,1,Nr);
 
 bottom = (1-theta_p')*template(3,:) + theta_p'*template(2,:);
-top = [Ro*cos(-theta_p*pi/4+pi/4); Ro*sin(-theta_p*pi/4+pi/4); 0*theta_p]';
+top = [
+  Ro*cos(-theta_p*(theta2-theta1)/2 + theta2); 
+  Ro*sin(-theta_p*(theta2-theta1)/2 + theta2); 
+  0*theta_p
+]';
 [elements1, boundaries1] = meshSideToSide(bottom, top, r_p);
 bottom = (1-theta_p')*template(2,:) + theta_p'*template(1,:);
-top = [Ro*cos(-theta_p*pi/4); Ro*sin(-theta_p*pi/4); 0*theta_p]';
+top = [
+  Ro*cos(-theta_p*(theta2-theta1)/2 + theta2 - (theta2-theta1)/2); 
+  Ro*sin(-theta_p*(theta2-theta1)/2 + theta2 - (theta2-theta1)/2); 
+  0*theta_p
+]';
 [elements2, boundaries2] = meshSideToSide(bottom, top, r_p);
 
 
@@ -33,37 +41,8 @@ elements = [elements1;elements2;elements3];
 % elements = [elements1;elements2];
 boundaries = [boundaries1; boundaries2];
 boundaries = boundaries(boundaries(:,3) == 3, :);
+
 boundaries(:, 3) = 1;
-
-
-elements_all = [];
-boundaries_all = [];
-
-Ne = size(elements,1);
-for k = 0:3
-    theta = -k * pi/2;
-    R = [cos(theta), -sin(theta), 0;
-         sin(theta),  cos(theta), 0;
-         0,           0,          1];
-
-    elements_rot = elements;
-
-    for e = 1:size(elements,1)
-        for n = 1:4
-            p = squeeze(elements(e,n,:))';
-            elements_rot(e,n,:) = (R * p')';
-        end
-    end
-
-    elements_all = [elements_all; elements_rot];
-    boundaries_rot = boundaries;
-    boundaries_rot(:,1) = boundaries_rot(:,1) + k*Ne;
-    boundaries_all = [boundaries_all; boundaries_rot];
-end
-
-elements = elements_all;
-boundaries = boundaries_all;
-
 
 end
 

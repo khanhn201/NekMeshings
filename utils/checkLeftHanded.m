@@ -29,7 +29,6 @@ function checkLeftHanded(elements)
 
         if dot_prod <= 0
             disp('Left-handed/ill-shaped element detected!');
-            return;
         end
     end
   end
