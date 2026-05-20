@@ -1,4 +1,4 @@
-function [elements, boundaries, circ] = meshIntersect(Nr, Ntheta, R1, R2, angle, R_rat, mult_r)
+function [elements, boundaries, circ] = meshIntersect(Nr, Ntheta, R1, R2, angle, R_rat, mult_r, center)
 a = [-1, 0, tan(pi/2-angle)];
 a = a / norm(a);
 ax = a(1); az = a(3);
@@ -32,8 +32,8 @@ for i=1:4
   k1 = j*(Ntheta-1) + 1;
   k2 = (j+1)*(Ntheta-1) + 1;
 
-  bottom0 = points(k0, :)*R_rat;
-  bottom2 = points(k2, :)*R_rat;
+  bottom0 = (points(k0, :)-center)*R_rat + center;
+  bottom2 = (points(k2, :)-center)*R_rat + center;
   bottom1 = fermatPoint([bottom0; bottom2; points(k1, :)]);
 
   bottom = (1-theta_p_loc)'*bottom0 + theta_p_loc'*bottom1;
@@ -46,7 +46,7 @@ for i=1:4
   [elements1, boundaries] = meshSideToSide(bottom, top, r_p);
   elements = [elements;elements1];
 
-  bottom = (1-theta_p_loc)'*[0,0,0] + theta_p_loc'*bottom2;
+  bottom = (1-theta_p_loc)'*center + theta_p_loc'*bottom2;
   top = (1-theta_p_loc)'*bottom0 + theta_p_loc'*bottom1;
   [elements1, boundaries] = meshSideToSide(bottom, top, theta_p_loc);
   elements = [elements;elements1];

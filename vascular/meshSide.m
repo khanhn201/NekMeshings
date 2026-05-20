@@ -1,8 +1,8 @@
-function [elements, boundaries] = meshSide(Nr, Ntheta, R_main, point, angle, rev, R_rat, mult_r)
+function [elements, boundaries] = meshSide(Nr, Ntheta, R_main, point, angle, rev, R_rat, mult_r, center)
 theta_p = linspace(0,1,Ntheta);
 
 pleft = point;
-pbottom = [R_main*cos(angle), R_main*sin(angle), 0];
+pbottom = [R_main*cos(angle), R_main*sin(angle), center(3)];
 theta_center = (atan2(pleft(2),pleft(1))+angle)/2;
 pleftc = [R_main*cos(theta_center), R_main*sin(theta_center), pleft(3)/2];
 
@@ -26,8 +26,8 @@ end
 
 
 
-bottom2 = pleft*R_rat;
-bottom0 = pbottom*R_rat;
+bottom2 = (pleft-center)*R_rat + center;
+bottom0 = (pbottom-center)*R_rat + center;
 bottom1 = fermatPoint([bottom0; bottom2; pleftc]);
 
 r_p = 1:Nr;
@@ -47,7 +47,7 @@ boundaries2(:, 3) = 1;
 boundaries2(:, 1) += size(elements1, 1);
 
 
-bottom = (1-theta_p)'*[0,0,0] + theta_p'*bottom2;
+bottom = (1-theta_p)'*center + theta_p'*bottom2;
 top = (1-theta_p)'*bottom0 + theta_p'*bottom1;
 [elements3, boundaries3] = meshSideToSide(bottom, top, theta_p);
 

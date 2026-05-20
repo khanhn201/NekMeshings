@@ -1,10 +1,14 @@
-function [elements, boundaries] = meshQuad(Nr, Ntheta, Ro, theta1, theta2, R_rat, mult_r)
+function [elements, boundaries] = meshQuad(Nr, Ntheta, Ro, theta1, theta2, R_rat, mult_r, center)
 Ri = Ro*R_rat;
 template = [
-  Ri*cos(theta1), Ri*sin(theta1), 0;
-  fermatPoint([Ri*cos(theta1), Ri*sin(theta1), 0],[Ri*cos(theta2), Ri*sin(theta2), 0],[Ro*cos(theta2/2+theta1/2), Ro*sin(theta2/2+theta1/2),0]);
-  Ri*cos(theta2), Ri*sin(theta2), 0;
-  0, 0, 0;
+  R_rat*([Ro*cos(theta1), Ro*sin(theta1), center(3)] - center)+center;
+  fermatPoint(
+    R_rat*([Ro*cos(theta1), Ro*sin(theta1), center(3)] - center)+center,
+    R_rat*([Ro*cos(theta2), Ro*sin(theta2), center(3)] - center)+center,
+    [Ro*cos(theta2/2+theta1/2), Ro*sin(theta2/2+theta1/2),center(3)]
+  );
+  R_rat*([Ro*cos(theta2), Ro*sin(theta2), center(3)] - center)+center;
+  center;
 ];
 
 
@@ -17,14 +21,14 @@ bottom = (1-theta_p')*template(3,:) + theta_p'*template(2,:);
 top = [
   Ro*cos(-theta_p*(theta2-theta1)/2 + theta2); 
   Ro*sin(-theta_p*(theta2-theta1)/2 + theta2); 
-  0*theta_p
+  0*theta_p + center(3)
 ]';
 [elements1, boundaries1] = meshSideToSide(bottom, top, r_p);
 bottom = (1-theta_p')*template(2,:) + theta_p'*template(1,:);
 top = [
   Ro*cos(-theta_p*(theta2-theta1)/2 + theta2 - (theta2-theta1)/2); 
   Ro*sin(-theta_p*(theta2-theta1)/2 + theta2 - (theta2-theta1)/2); 
-  0*theta_p
+  0*theta_p + center(3)
 ]';
 [elements2, boundaries2] = meshSideToSide(bottom, top, r_p);
 

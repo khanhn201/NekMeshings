@@ -125,13 +125,13 @@ elements = [elements; elements1];
 boundaries = [boundaries; boundaries1];
 
 
-theta1 = atan2(left_face(1, 1,2),left_face(1, 1,1));
+theta1 = atan2(left_face(Nring-Ntheta+2, 4,2),left_face(Nring-Ntheta+2, 4,1));
 theta2 = atan2(left_face(Nring, 3,2),left_face(Nring, 3,1));
 theta = linspace(theta1, theta2, Ntheta);
 botleft_cir = zeros(Ntheta, 3);
 botleft_cir(:, 1) = R_main*cos(theta);
 botleft_cir(:, 2) = R_main*sin(theta);
-botleft_cir(:, 3) = theta_p'*left_face(Nring, 3,3);
+botleft_cir(:, 3) =(1-theta_p')*left_face(Nring-Ntheta+2, 4,3) + theta_p'*left_face(Nring, 3,3);
 
 
 surface = zeros(Ntheta, Ntheta, 3);
