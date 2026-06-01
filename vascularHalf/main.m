@@ -6,19 +6,21 @@ R_main = 4;
 D_um = 3;
 D_depth = 1.5;
 angle = 1*pi/4;
+
 Nr = 4;
 Ntheta = 4;
 
 R_rat = 0.6;
 mult_r = 1.5;
 
-Nz_leftfaro = 20;
-Nz_leftfar = 8;
+Nz_leftfaro = 6;
+Nz_leftfar = 30;
 Nz_leftclose = 10;
-Nz_rightfar = 40;
+Nz_rightfar = 35;
 Nz_rightclose = 10;
-Nz_graftclose = 10;
-Nz_graftfar = 30;
+Nz_graftclose = 30;
+Nz_graftfar = 6;
+
 
 center = [0.0,0,0.0];
 
@@ -29,7 +31,7 @@ Nfan = (Nr-1)*(Ntheta-1)*2;
 [grafto, boundariesCirc] = meshCirc(Nr, Ntheta, R_graft, R_rat, mult_r);
 grafto(:, :, 3) = grafto(:, :, 3) + 80;
 [graft, boundariesCirc] = meshCirc(Nr, Ntheta, R_graft, R_rat, mult_r);
-graft(:, :, 3) = graft(:, :, 3) + 20;
+graft(:, :, 3) = graft(:, :, 3) + 70;
 
 elements = [];
 boundaries = [];
@@ -65,11 +67,11 @@ lefto = rotateY(lefto, pi);
 lefto(:, :, 3) = lefto(:, :, 3) + 80;
 [leftc, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
 leftc = rotateY(leftc, pi);
-leftc(:, :, 3) = leftc(:, :, 3) + 30;
+leftc(:, :, 3) = leftc(:, :, 3) + 70;
 
 [left, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
 left = rotateY(left, pi);
-left(:, :, 3) = -1.2*max(0,left(:, :, 1));
+left(:, :, 3) = -1.5*max(0,left(:, :, 1));
 left(:, :, 3) = left(:, :, 3) + 18;
 
 [elements1, boundaries1] = meshFaceToFace(lefto,leftc, linspace(0, 1, Nz_leftfaro), boundariesCirc, [1, 1]);
@@ -108,7 +110,7 @@ boundaries = [boundaries; boundaries1];
 righto(:, :, 3) = righto(:, :, 3) - 80;
 [right, boundariesCirc] = meshCirc(Nr, Ntheta, R_main, R_rat, mult_r);
 % right(:, :, 3) = 1.0*right(:, :, 1);
-right(:, :, 3) = right(:, :, 3) - 8;
+right(:, :, 3) = right(:, :, 3) - 6;
 
 [elements1, boundaries1] = meshFaceToFace(righto,right, linspace(0, 1, Nz_rightfar), boundariesCirc, [1, 1]);
 boundaries1(:, 1) += size(elements, 1);
@@ -143,7 +145,13 @@ for k=size(intersect,1)*(Nz_graftclose+Nz_graftfar)+1:size(elements, 1)
     end
     circ_shrink = (intersectCirc-center_cast)*R_shrink/R_main + center_cast;
     [d, pos1, pos2] = distToCirc(p, circ_shrink, R_shrink, 4);
-    D_um_loc = D_um + 2*norm(squeeze(intersectCirc(pos1, pos2,:)-circ_shrink(pos1,pos2,:)));
+    v1 = squeeze(intersectCirc(pos1, pos2,:)-circ_shrink(pos1,pos2,:));
+    v2 = p'-squeeze(circ_shrink(pos1,pos2,:));
+    v1n = v1(:);
+    v2n = v2(:);
+    proj = (v1n' * v2n) / (v2n' * v2n) * v2n;
+
+    D_um_loc = D_um + 2*norm(proj);
     % D_um_loc = D_um*(R_main/R_shrink)^2;
     R_local = 1 - D_depth/R_main*sin(min(1,max(d/D_um_loc,0))*pi)*...
                   max(cos(atan2(p(2), p(1))),0);
