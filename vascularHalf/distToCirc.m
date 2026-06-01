@@ -29,6 +29,34 @@
 % end
 
 function [d, pos1, pos2] = distToCirc(p, circ, R, m)
+theta = atan2(p(2),p(1));
+s = R * theta;
+Nc = size(circ,1)*size(circ,2);
+d = inf;
+s_circ = zeros(Nc,1);
+z_circ = zeros(Nc,1);
+
+for k = 1:size(circ,1)
+for j = 1:size(circ,2)
+    pt = squeeze(circ(k,j,:))';
+    t = atan2(pt(2), pt(1));
+    s_circ(k*size(circ,2) + j) = R * t;
+    z_circ(k*size(circ,2) + j) = pt(3);
+end
+end
+
+s_circ = unwrap(s_circ / R) * R;
+pp = [R*atan2(p(2),p(1)), p(3)];
+
+[in, on] = inpolygon(pp(1), pp(2), s_circ, z_circ);
+
+pos1 = 1;
+pos2 = 1;
+if in || on
+    d = 0;
+    return;
+end
+
 d = inf;
 pos1 = 0;
 pos2 = 0;
